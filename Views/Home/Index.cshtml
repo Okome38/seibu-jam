@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "青武jam";
+}
+<div class="text-center">
+    <h1 class="display-4">青武jam</h1>
+    <p>福井高専行事予定 <a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf">ここから見る</a>.</p>
+</div>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>寮の風呂 混雑度グラフ</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    canvas { max-width: 300px; max-height: 200px;}
+  </style>
+</head>
+<body>
+  <h2>寮の風呂 混雑度（予測）</h2>
+  <canvas id="congestionChart"></canvas>
+</body>
+</html>
+
+@* <form method="Post" asp-controller="Home" asp-action="Post">
+    <textarea name="text" rows="5" class="form-control"></textarea>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form> *@
+<link rel="stylesheet" href="./weather.css">
+<div class="weatherForecast">
+  <div class="weather">
+    <div class="date">--/--(-)</div>
+    <img class="weatherImg">
+    <div class="weatherTelop">--</div>
+    <div><span class="tempMin">-℃</span>/<span class="tempMax">-℃</span></div>
+  </div>
+</div>
+<div id="location"><a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a></div>
+<script>
+  for (let i = 0; i < 6; i++) {
+    const el = document.querySelector('.weather').cloneNode(true);
+    document.querySelector('.weatherForecast').appendChild(el);
+  }
+</script>
+<script src="./weather.js"></script>
+<div id="currentWeatherText"></div>
+
+<h1>掲示板</h1>
+<form id="postForm">
+    <input type="text" id="name" placeholder="名前" maxlength="100" />
+    <textarea id="message" placeholder="メッセージ"></textarea>
+    <button type="submit">投稿</button>
+</form>
+<div id="posts"></div>
+<script src="site.js"></script>

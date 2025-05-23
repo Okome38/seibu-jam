@@ -1,0 +1,6 @@
+{
+    "appService.preDeployTask": "publish-release",
+    "appService.deploySubpath": "bin\\Release\\net9.0\\publish",
+    "appService.defaultWebAppToDeploy": "/subscriptions/910fc5c3-4f22-451e-9e6b-aa95f1c9fc85/resourceGroups/創造工学演習/providers/Microsoft.Web/sites/fukui-nct-2025-08",
+    "sqltools.connections": []
+}
