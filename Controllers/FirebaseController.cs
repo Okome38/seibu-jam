@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using YourProject.Models;
-using YourProject.Services;
+using seibuDatabase.Models;
+using seibuDatabase.Services;
 
-namespace YourProject.Controllers
+namespace seibuDatabase.Controllers
 {
     public class FirebaseController : Controller
     {
