@@ -1,4 +1,4 @@
-namespace YourProject.Models
+namespace seibuDatabase.Models
 {
     public class Message
     {
