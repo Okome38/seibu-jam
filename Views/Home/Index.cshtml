@@ -45,11 +45,54 @@
 <script src="./weather.js"></script>
 <div id="currentWeatherText"></div>
 
-<h1>高専掲示板</h1>
+@* <h1>高専掲示板</h1>
 <form id="postForm">
     <input type="text" id="name" placeholder="名前" maxlength="100" />
     <textarea id="message" placeholder="メッセージ"></textarea>
     <button type="submit">投稿</button>
 </form>
 <div id="posts"></div>
-<script src="site.js"></script>
+<script src="site.js"></script>*@
+
+@model List<YourProject.Models.Message>
+@{
+    ViewData["Title"] = "掲示板";
+}
+
+<h1>掲示板</h1>
+
+<!-- 投稿フォーム -->
+<form asp-controller="Firebase" asp-action="PostMessage" method="post">
+    <div>
+        <label>名前:</label>
+        <input type="text" name="name" required />
+    </div>
+    <div>
+        <label>メッセージ:</label>
+        <textarea name="message" required></textarea>
+    </div>
+    <div>
+        <button type="submit">投稿</button>
+    </div>
+</form>
+
+<hr />
+
+<!-- メッセージ一覧表示 -->
+<h2>投稿一覧</h2>
+@if (Model != null && Model.Count > 0)
+{
+    <ul>
+        @foreach (var msg in Model.OrderByDescending(m => m.timestamp))
+        {
+            <li>
+                <strong>@msg.name</strong>（@msg.timestamp.ToLocalTime().ToString("yyyy/MM/dd HH:mm")）:<br />
+                @msg.message
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>投稿がまだありません。</p>
+}
