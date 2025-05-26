@@ -1,7 +1,7 @@
 using Firebase.Database;
 using Firebase.Database.Query;
 
-namespace Fukuinct2025.Services
+namespace seibuDatabase.Services
 {
     public class FirebaseService
     {
