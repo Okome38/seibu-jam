@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using seibuDatabase.Models;
-using seibuDatabase.Services;
+using Fukuinct2025.Models;
+using Fukuinct2025.Services;
 
 namespace seibuDatabase.Controllers
 {
