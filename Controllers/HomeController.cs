@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using seibuDatabase.Services;
 using seibuDatabase.Models;
+using Fukuinct2025.Models;
 
 namespace Fukuinct2025.Controllers;
 
