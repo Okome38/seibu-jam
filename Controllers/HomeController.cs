@@ -4,22 +4,6 @@ using Fukuinct2025.Models;
 using seibuDatabase.Services;
 using seibuDatabase.Models;
 
-public class HomeController : Controller
-{
-    private readonly FirebaseService _firebaseService;
-
-    public HomeController()
-    {
-        _firebaseService = new FirebaseService();
-    }
-
-    public async Task<IActionResult> Index()
-    {
-        var messages = await _firebaseService.GetMessages();
-        return View(messages);
-    }
-}
-
 
 namespace Fukuinct2025.Controllers;
 
@@ -51,6 +35,19 @@ public class HomeController : Controller
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+        private readonly FirebaseService _firebaseService;
+
+    public HomeController()
+    {
+        _firebaseService = new FirebaseService();
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var messages = await _firebaseService.GetMessages();
+        return View(messages);
     }
 
 }
