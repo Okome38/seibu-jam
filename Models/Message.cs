@@ -1,4 +1,4 @@
-namespace seibuDatabase.Models
+namespace Fukuinct2025.Models
 {
     public class Message
     {
