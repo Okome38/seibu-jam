@@ -1,5 +1,6 @@
 using Firebase.Database;
 using Firebase.Database.Query;
+using seibuDatabase.Models;
 
 namespace seibuDatabase.Services
 {
