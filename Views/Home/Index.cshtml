@@ -22,10 +22,6 @@
 </body>
 </html>
 
-@* <form method="Post" asp-controller="Home" asp-action="Post">
-    <textarea name="text" rows="5" class="form-control"></textarea>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form> *@
 <link rel="stylesheet" href="./weather.css">
 <div class="weatherForecast">
   <div class="weather">
@@ -45,14 +41,6 @@
 <script src="./weather.js"></script>
 <div id="currentWeatherText"></div>
 
-@* <h1>高専掲示板</h1>
-<form id="postForm">
-    <input type="text" id="name" placeholder="名前" maxlength="100" />
-    <textarea id="message" placeholder="メッセージ"></textarea>
-    <button type="submit">投稿</button>
-</form>
-<div id="posts"></div>
-<script src="site.js"></script>*@
 
 @model List<seibuDatabase.Models.Message>
 @{
