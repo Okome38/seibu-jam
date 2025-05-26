@@ -1,6 +1,24 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Fukuinct2025.Models;
+using seibuDatabase.Services;
+using seibuDatabase.Models;
+
+public class HomeController : Controller
+{
+    private readonly FirebaseService _firebaseService;
+
+    public HomeController()
+    {
+        _firebaseService = new FirebaseService();
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var messages = await _firebaseService.GetMessages();
+        return View(messages);
+    }
+}
 
 
 namespace Fukuinct2025.Controllers;
