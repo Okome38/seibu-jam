@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Fukuinct2025.Models;
 using seibuDatabase.Services;
 using seibuDatabase.Models;
 
