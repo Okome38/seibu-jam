@@ -21,9 +21,9 @@ namespace seibuDatabase.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Message()
+        public async Task<IActionResult> Messages()
         {
-            var messages = await _firebaseService.GetMessage();
+            var messages = await _firebaseService.GetMessages();
             return View(messages); // Views/Firebase/Messages.cshtml に表示
         }
     }
