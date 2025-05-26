@@ -1,36 +1,31 @@
-using Firebase.Database;
-using Firebase.Database.Query;
+using Microsoft.AspNetCore.Mvc;
+using YourProject.Models;
+using YourProject.Services;
 
-public class FirebaseService
+namespace YourProject.Controllers
 {
-    private readonly FirebaseClient _firebase;
-
-    public FirebaseService()
+    public class FirebaseController : Controller
     {
-        _firebase = new FirebaseClient("https://your-project-id.firebaseio.com/");
-    }
+        private readonly FirebaseService _firebaseService;
 
-    public async Task AddMessage(string name, string message)
-    {
-        await _firebase
-          .Child("messages")
-          .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
-    }
+        public FirebaseController()
+        {
+            _firebaseService = new FirebaseService();
+        }
 
-    public async Task<List<Message>> GetMessages()
-    {
-        var messages = await _firebase
-          .Child("messages")
-          .OrderBy("timestamp")
-          .OnceAsync<Message>();
+        [HttpPost]
+        public async Task<IActionResult> PostMessage(string name, string message)
+        {
+            await _firebaseService.AddMessage(name, message);
+            return RedirectToAction("Index", "Home");
+        }
 
-        return messages.Select(x => x.Object).ToList();
+        [HttpGet]
+        public async Task<IActionResult> Messages()
+        {
+            var messages = await _firebaseService.GetMessages();
+            return View(messages); // Views/Firebase/Messages.cshtml に表示
+        }
     }
 }
 
-public class Message
-{
-    public string name { get; set; }
-    public string message { get; set; }
-    public DateTime timestamp { get; set; }
-}
