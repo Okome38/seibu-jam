@@ -11,7 +11,7 @@
     <PackageReference Include="itextsharp" Version="5.5.13.4" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
-    <PackageReference Include="FirebaseDatabase.net" Version="5.2.0" />
+    <PackageReference Include="FirebaseDatabase.net" Version="5.0.0" />
   </ItemGroup>
 
 </Project>
