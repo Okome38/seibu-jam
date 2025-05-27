@@ -1,425 +1,695 @@
-@model List<seibuDatabase.Models.Message>
-@{
-    ViewData["Title"] = "青武jam";
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青武jam</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="text-center">
+            <h1 class="display-4">青武jam</h1>
+            <p>福井高専行事予定 <a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf" target="_blank">ここから見る</a></p>
+        </div>
 
-<div class="text-center">
-    <h1 class="display-4">青武jam</h1>
-    <p>福井高専行事予定 <a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf">ここから見る</a></p>
-</div>
+        <!-- 今後1週間の予定セクション -->
+        <div class="schedule-section">
+            <h2>今後1週間の予定</h2>
+            <div id="scheduleContent" class="schedule-content">
+                <div class="loading">PDFから予定を読み込み中...</div>
+            </div>
+        </div>
 
-<!-- 天気予報セクション -->
-<div class="weather-section">
-    <h2>天気予報</h2>
-    <div id="weatherForecast" class="weather-forecast">
-        <div class="weather-item">
-            <div class="date">読み込み中...</div>
-            <img class="weather-img" alt="天気アイコン">
-            <div class="weather-telop">--</div>
-            <div><span class="temp-min">-℃</span>/<span class="temp-max">-℃</span></div>
+        <!-- 天気予報セクション -->
+        <div class="weather-section">
+            <h2>天気予報</h2>
+            <div id="weatherForecast" class="weather-forecast">
+                <div class="weather-item">
+                    <div class="date">読み込み中...</div>
+                    <img class="weather-img" alt="天気アイコン">
+                    <div class="weather-telop">--</div>
+                    <div><span class="temp-min">-℃</span>/<span class="temp-max">-℃</span></div>
+                </div>
+            </div>
+            <div id="location">
+                <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>
+            </div>
+            <div id="currentWeatherText"></div>
+        </div>
+
+        <!-- 混雑度グラフセクション -->
+        <div class="congestion-section">
+            <h2>寮の風呂 混雑度（予測）</h2>
+            <canvas id="congestionChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- 掲示板セクション -->
+        <div class="bulletin-section">
+            <h1>掲示板</h1>
+            <div class="alert alert-info">
+                <strong>注意:</strong> この掲示板機能は表示のみです。実際の投稿機能はサーバーサイドの実装が必要です。
+            </div>
+
+            <!-- 投稿フォーム -->
+            <form id="messageForm">
+                <div class="form-group mb-3">
+                    <label>名前:</label>
+                    <input type="text" id="nameInput" class="form-control" required />
+                </div>
+                <div class="form-group mb-3">
+                    <label>メッセージ:</label>
+                    <textarea id="messageInput" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="form-group mb-3">
+                    <button type="submit" class="btn btn-primary">投稿</button>
+                </div>
+            </form>
+
+            <hr />
+
+            <!-- メッセージ一覧表示 -->
+            <h2>投稿一覧</h2>
+            <div id="messagesList">
+                <p>投稿がまだありません。</p>
+            </div>
         </div>
     </div>
-    <div id="location">
-        <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>
-    </div>
-    <div id="currentWeatherText"></div>
-</div>
 
-<!-- 混雑度グラフセクション -->
-<div class="congestion-section">
-    <h2>寮の風呂 混雑度（予測）</h2>
-    <canvas id="congestionChart" width="400" height="200"></canvas>
-</div>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<!-- 掲示板セクション -->
-<div class="bulletin-section">
-    <h1>掲示板</h1>
-
-    <!-- 投稿フォーム -->
-    <form asp-controller="Firebase" asp-action="PostMessage" method="post">
-        <div class="form-group">
-            <label>名前:</label>
-            <input type="text" name="name" class="form-control" required />
-        </div>
-        <div class="form-group">
-            <label>メッセージ:</label>
-            <textarea name="message" class="form-control" rows="4" required></textarea>
-        </div>
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">投稿</button>
-        </div>
-    </form>
-
-    <hr />
-
-    <!-- メッセージ一覧表示 -->
-    <h2>投稿一覧</h2>
-    @if (Model != null && Model.Count > 0)
-    {
-        <ul class="list-unstyled">
-            @foreach (var msg in Model.OrderByDescending(m => m.timestamp))
-            {
-                <li class="post-item">
-                    <strong>@msg.name</strong>（@msg.timestamp.ToLocalTime().ToString("yyyy/MM/dd HH:mm")）:<br />
-                    @msg.message
-                </li>
-            }
-        </ul>
+    <style>
+    /* 予定表示スタイル */
+    .schedule-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f8f9fa;
     }
-    else
-    {
-        <p>投稿がまだありません。</p>
+
+    .schedule-content {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #e0e0e0;
     }
-</div>
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    .schedule-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
 
-<style>
-/* 天気予報スタイル */
-.weather-section {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
+    .schedule-item:last-child {
+        border-bottom: none;
+    }
 
-.weather-forecast {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    margin: 20px 0;
-}
+    .schedule-date {
+        font-weight: bold;
+        color: #0066cc;
+    }
 
-.weather-item {
-    text-align: center;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin: 5px;
-    min-width: 100px;
-}
+    .schedule-event {
+        margin-left: 10px;
+        color: #333;
+    }
 
-.weather-img {
-    width: 50px;
-    height: 50px;
-    display: block;
-    margin: 0 auto;
-}
+    .loading {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+    }
 
-.temp-min {
-    color: blue;
-}
+    .error {
+        color: #dc3545;
+        background-color: #f8d7da;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #f5c6cb;
+    }
 
-.temp-max {
-    color: red;
-}
+    /* 天気予報スタイル */
+    .weather-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
 
-/* 混雑度グラフスタイル */
-.congestion-section {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
+    .weather-forecast {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin: 20px 0;
+    }
 
-#congestionChart {
-    max-width: 100%;
-    height: auto;
-}
+    .weather-item {
+        text-align: center;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin: 5px;
+        min-width: 100px;
+    }
 
-/* 掲示板スタイル */
-.bulletin-section {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
+    .weather-img {
+        width: 50px;
+        height: 50px;
+        display: block;
+        margin: 0 auto;
+    }
 
-.post-item {
-    border-bottom: 1px solid #ccc;
-    padding: 10px 0;
-}
+    .temp-min {
+        color: blue;
+    }
 
-.form-group {
-    margin-bottom: 15px;
-}
-</style>
+    .temp-max {
+        color: red;
+    }
 
-<script>
-// 天気コードマッピング
-const weatherCode = {
-    100: ["100.svg", "500.svg", "晴れ"],
-    101: ["101.svg", "501.svg", "晴れ時々曇り"],
-    102: ["102.svg", "502.svg", "晴れ一時雨"],
-    103: ["102.svg", "502.svg", "晴れ時々雨"],
-    104: ["104.svg", "504.svg", "晴れ一時雪"],
-    105: ["104.svg", "504.svg", "晴れ時々雪"],
-    106: ["102.svg", "502.svg", "晴れ一時雨か雪"],
-    107: ["102.svg", "502.svg", "晴れ時々雨か雪"],
-    108: ["102.svg", "502.svg", "晴れ一時雨か雷雨"],
-    110: ["110.svg", "510.svg", "晴れ後時々曇り"],
-    111: ["110.svg", "510.svg", "晴れ後曇り"],
-    112: ["112.svg", "512.svg", "晴れ後一時雨"],
-    113: ["112.svg", "512.svg", "晴れ後時々雨"],
-    114: ["112.svg", "512.svg", "晴れ後雨"],
-    115: ["115.svg", "515.svg", "晴れ後一時雪"],
-    116: ["115.svg", "515.svg", "晴れ後時々雪"],
-    117: ["115.svg", "515.svg", "晴れ後雪"],
-    118: ["112.svg", "512.svg", "晴れ後雨か雪"],
-    119: ["112.svg", "512.svg", "晴れ後雨か雷雨"],
-    120: ["102.svg", "502.svg", "晴れ朝夕一時雨"],
-    200: ["200.svg", "200.svg", "曇り"],
-    201: ["201.svg", "601.svg", "曇り時々晴れ"],
-    202: ["202.svg", "202.svg", "曇り一時雨"],
-    203: ["202.svg", "202.svg", "曇り時々雨"],
-    204: ["204.svg", "204.svg", "曇り一時雪"],
-    300: ["300.svg", "300.svg", "雨"],
-    301: ["301.svg", "701.svg", "雨時々晴れ"],
-    302: ["302.svg", "302.svg", "雨時々止む"],
-    400: ["400.svg", "400.svg", "雪"],
-    401: ["401.svg", "801.svg", "雪時々晴れ"],
-    402: ["402.svg", "402.svg", "雪時々止む"]
-};
+    /* 混雑度グラフスタイル */
+    .congestion-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
 
-const dayList = ["日", "月", "火", "水", "木", "金", "土"];
+    #congestionChart {
+        max-width: 100%;
+        height: auto;
+    }
 
-// デフォルトの混雑度データ
-const baseCongestion = [
-    { time: "17時", percent: 10 },
-    { time: "18時", percent: 50 },
-    { time: "19時", percent: 70 },
-    { time: "20時", percent: 40 },
-    { time: "21時", percent: 50 },
-    { time: "22時", percent: 30 },
-    { time: "23時", percent: 20 }
-];
+    /* 掲示板スタイル */
+    .bulletin-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
 
-// 混雑度グラフを作成する関数（折れ線グラフに変更）
-function createCongestionChart(weatherData = null) {
-    let adjustedCongestion = [...baseCongestion];
-    
-    if (weatherData) {
-        const currentDate = new Date(weatherData.date);
-        const dayOfWeek = currentDate.getDay();
+    .post-item {
+        border-bottom: 1px solid #ccc;
+        padding: 10px 0;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+    </style>
+
+    <script>
+    // PDF.jsの設定
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // 簡易掲示板のデータ保存（メモリ内）
+    let messages = [];
+
+    // 掲示板の投稿処理
+    document.getElementById('messageForm').addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        // 金土日の場合は混雑度を下げる
-        if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) {
-            adjustedCongestion = adjustedCongestion.map(item => ({
-                time: item.time,
-                percent: Math.round(item.percent * 0.2)
-            }));
-        } else if (weatherData.telop && weatherData.telop.includes("雨")) {
-            // 雨の場合は早い時間にシフト
-            for (let i = 2; i > 0; i--) {
-                const movePercent = Math.min(20, adjustedCongestion[i].percent);
-                adjustedCongestion[i].percent -= movePercent;
-                adjustedCongestion[i - 1].percent += movePercent;
+        const name = document.getElementById('nameInput').value;
+        const message = document.getElementById('messageInput').value;
+        
+        if (name && message) {
+            const newMessage = {
+                name: name,
+                message: message,
+                timestamp: new Date()
+            };
+            
+            messages.push(newMessage);
+            displayMessages();
+            
+            // フォームをクリア
+            document.getElementById('nameInput').value = '';
+            document.getElementById('messageInput').value = '';
+        }
+    });
+
+    // メッセージ一覧を表示
+    function displayMessages() {
+        const messagesList = document.getElementById('messagesList');
+        
+        if (messages.length === 0) {
+            messagesList.innerHTML = '<p>投稿がまだありません。</p>';
+            return;
+        }
+        
+        const sortedMessages = messages.sort((a, b) => b.timestamp - a.timestamp);
+        
+        messagesList.innerHTML = '<ul class="list-unstyled">' +
+            sortedMessages.map(msg => 
+                `<li class="post-item">
+                    <strong>${escapeHtml(msg.name)}</strong>（${msg.timestamp.toLocaleString('ja-JP')}）:<br />
+                    ${escapeHtml(msg.message)}
+                </li>`
+            ).join('') +
+            '</ul>';
+    }
+
+    // HTMLエスケープ関数
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // PDFから予定を抽出する関数
+    async function extractScheduleFromPDF() {
+        const scheduleContent = document.getElementById('scheduleContent');
+        
+        try {
+            // PDFファイルのパスを読み取り
+            const pdfPath = '2faa9754d9a33485215a756bb4c73525-1.pdf';
+            
+            // ファイルを読み込み
+            let pdfData;
+            try {
+                pdfData = await window.fs.readFile(pdfPath);
+            } catch (fileError) {
+                throw new Error('PDFファイルが見つかりません。ファイルをアップロードしてください。');
             }
+            
+            // PDFを読み込み
+            const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
+            
+            let fullText = '';
+            
+            // 全ページのテキストを抽出
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                
+                // テキストアイテムを結合
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
+            }
+            
+            // 今後1週間の予定を抽出
+            const weeklySchedule = extractWeeklySchedule(fullText);
+            displaySchedule(weeklySchedule);
+            
+        } catch (error) {
+            console.error('PDF読み込みエラー:', error);
+            scheduleContent.innerHTML = `
+                <div class="error">
+                    <strong>エラー:</strong> ${error.message}<br>
+                    PDFファイルをアップロードするか、直接<a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf" target="_blank">元のPDF</a>をご確認ください。
+                </div>
+            `;
         }
     }
-    
-    const labels = adjustedCongestion.map(item => item.time);
-    const data = adjustedCongestion.map(item => item.percent);
-    
-    const ctx = document.getElementById('congestionChart');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: '混雑度（%）',
-                    data: data,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: { stepSize: 10 }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true
+
+    // 今後1週間の予定を抽出する関数
+    function extractWeeklySchedule(text) {
+        const today = new Date();
+        const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        
+        // 日付パターンを検索（月/日、月-日、月.日の形式）
+        const datePatterns = [
+            /(\d{1,2})[\/\-\.](\d{1,2})/g,
+            /(\d{1,2})月(\d{1,2})日/g
+        ];
+        
+        let scheduleItems = [];
+        
+        // テキストを行ごとに分割
+        const lines = text.split('\n').filter(line => line.trim());
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // 各パターンで日付を検索
+            for (const pattern of datePatterns) {
+                let match;
+                while ((match = pattern.exec(line)) !== null) {
+                    const month = parseInt(match[1]);
+                    const day = parseInt(match[2]);
+                    
+                    // 有効な日付かチェック
+                    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                        const eventDate = new Date(today.getFullYear(), month - 1, day);
+                        
+                        // 年を調整（今年か来年か）
+                        if (eventDate < today) {
+                            eventDate.setFullYear(today.getFullYear() + 1);
+                        }
+                        
+                        // 今後1週間以内かチェック
+                        if (eventDate >= today && eventDate <= nextWeek) {
+                            // イベント内容を抽出（日付の後の部分）
+                            const eventText = line.substring(match.index + match[0].length).trim();
+                            
+                            // 次の行も含めて内容を取得
+                            let fullEventText = eventText;
+                            if (i + 1 < lines.length && !lines[i + 1].match(/\d{1,2}[\/\-\.]\d{1,2}/)) {
+                                fullEventText += ' ' + lines[i + 1].trim();
+                            }
+                            
+                            if (fullEventText) {
+                                scheduleItems.push({
+                                    date: eventDate,
+                                    event: fullEventText.substring(0, 100) // 長すぎる場合は切り詰め
+                                });
+                            }
+                        }
                     }
                 }
             }
-        });
+        }
+        
+        // 日付でソート
+        scheduleItems.sort((a, b) => a.date - b.date);
+        
+        // 重複を除去
+        const uniqueSchedule = [];
+        const seen = new Set();
+        
+        for (const item of scheduleItems) {
+            const key = `${item.date.toDateString()}_${item.event}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueSchedule.push(item);
+            }
+        }
+        
+        return uniqueSchedule;
     }
-}
 
-// 天気データを取得する関数
-async function fetchWeatherData() {
-    try {
-        const url = "https://www.jma.go.jp/bosai/forecast/data/forecast/180000.json";
-        const response = await fetch(url);
+    // 予定を表示する関数
+    function displaySchedule(scheduleItems) {
+        const scheduleContent = document.getElementById('scheduleContent');
         
-        if (!response.ok) {
-            throw new Error('天気データの取得に失敗しました');
+        if (scheduleItems.length === 0) {
+            scheduleContent.innerHTML = `
+                <div class="text-center">
+                    <p>今後1週間の予定が見つかりませんでした。</p>
+                    <p><a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf" target="_blank">元のPDFをご確認ください</a></p>
+                </div>
+            `;
+            return;
         }
         
-        const weather = await response.json();
+        const scheduleHTML = scheduleItems.map(item => {
+            const dateStr = item.date.toLocaleDateString('ja-JP', {
+                month: 'long',
+                day: 'numeric',
+                weekday: 'short'
+            });
+            
+            return `
+                <div class="schedule-item">
+                    <div class="schedule-date">${dateStr}</div>
+                    <div class="schedule-event">${escapeHtml(item.event)}</div>
+                </div>
+            `;
+        }).join('');
         
-        // 地域名を表示
-        const locationElement = document.getElementById("location");
-        if (locationElement && weather[1]) {
-            locationElement.innerHTML = 
-                `${weather[1].publishingOffice}: ${weather[1].timeSeries[0].areas[0].area.name} ` +
-                `<a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>`;
-        }
-        
-        // 天気予報を表示
-        displayWeatherForecast(weather);
-        
-        // 現在の天気データを取得
-        const currentWeatherData = getCurrentWeatherData(weather);
-        
-        // 混雑度グラフを作成
-        createCongestionChart(currentWeatherData);
-        
-    } catch (error) {
-        console.error('天気データの取得エラー:', error);
-        
-        // エラー時は現在の日付で基本の混雑度グラフを表示
-        const currentWeatherText = document.getElementById("currentWeatherText");
-        if (currentWeatherText) {
-            currentWeatherText.textContent = "天気データの取得に失敗しました。基本の混雑度を表示しています。";
-        }
-        
-        createCongestionChart();
+        scheduleContent.innerHTML = scheduleHTML;
     }
-}
 
-// 天気予報を表示する関数
-function displayWeatherForecast(weather) {
-    const weatherForecast = document.getElementById("weatherForecast");
-    if (!weatherForecast) return;
-    
-    // 既存の天気アイテムをクリア
-    weatherForecast.innerHTML = '';
-    
-    try {
-        const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
-        const timeDefines = weather[0].timeSeries[0].timeDefines;
+    // 天気コードマッピング
+    const weatherCode = {
+        100: ["100.svg", "500.svg", "晴れ"],
+        101: ["101.svg", "501.svg", "晴れ時々曇り"],
+        102: ["102.svg", "502.svg", "晴れ一時雨"],
+        103: ["102.svg", "502.svg", "晴れ時々雨"],
+        104: ["104.svg", "504.svg", "晴れ一時雪"],
+        105: ["104.svg", "504.svg", "晴れ時々雪"],
+        106: ["102.svg", "502.svg", "晴れ一時雨か雪"],
+        107: ["102.svg", "502.svg", "晴れ時々雨か雪"],
+        108: ["102.svg", "502.svg", "晴れ一時雨か雷雨"],
+        110: ["110.svg", "510.svg", "晴れ後時々曇り"],
+        111: ["110.svg", "510.svg", "晴れ後曇り"],
+        112: ["112.svg", "512.svg", "晴れ後一時雨"],
+        113: ["112.svg", "512.svg", "晴れ後時々雨"],
+        114: ["112.svg", "512.svg", "晴れ後雨"],
+        115: ["115.svg", "515.svg", "晴れ後一時雪"],
+        116: ["115.svg", "515.svg", "晴れ後時々雪"],
+        117: ["115.svg", "515.svg", "晴れ後雪"],
+        118: ["112.svg", "512.svg", "晴れ後雨か雪"],
+        119: ["112.svg", "512.svg", "晴れ後雨か雷雨"],
+        120: ["102.svg", "502.svg", "晴れ朝夕一時雨"],
+        200: ["200.svg", "200.svg", "曇り"],
+        201: ["201.svg", "601.svg", "曇り時々晴れ"],
+        202: ["202.svg", "202.svg", "曇り一時雨"],
+        203: ["202.svg", "202.svg", "曇り時々雨"],
+        204: ["204.svg", "204.svg", "曇り一時雪"],
+        300: ["300.svg", "300.svg", "雨"],
+        301: ["301.svg", "701.svg", "雨時々晴れ"],
+        302: ["302.svg", "302.svg", "雨時々止む"],
+        400: ["400.svg", "400.svg", "雪"],
+        401: ["401.svg", "801.svg", "雪時々晴れ"],
+        402: ["402.svg", "402.svg", "雪時々止む"]
+    };
+
+    const dayList = ["日", "月", "火", "水", "木", "金", "土"];
+
+    // デフォルトの混雑度データ
+    const baseCongestion = [
+        { time: "17時", percent: 10 },
+        { time: "18時", percent: 50 },
+        { time: "19時", percent: 70 },
+        { time: "20時", percent: 40 },
+        { time: "21時", percent: 50 },
+        { time: "22時", percent: 30 },
+        { time: "23時", percent: 20 }
+    ];
+
+    // 混雑度グラフを作成する関数（折れ線グラフに変更）
+    function createCongestionChart(weatherData = null) {
+        let adjustedCongestion = [...baseCongestion];
         
-        // 気温データを取得
-        let tempData = null;
+        if (weatherData) {
+            const currentDate = new Date(weatherData.date);
+            const dayOfWeek = currentDate.getDay();
+            
+            // 金土日の場合は混雑度を下げる
+            if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) {
+                adjustedCongestion = adjustedCongestion.map(item => ({
+                    time: item.time,
+                    percent: Math.round(item.percent * 0.2)
+                }));
+            } else if (weatherData.telop && weatherData.telop.includes("雨")) {
+                // 雨の場合は早い時間にシフト
+                for (let i = 2; i > 0; i--) {
+                    const movePercent = Math.min(20, adjustedCongestion[i].percent);
+                    adjustedCongestion[i].percent -= movePercent;
+                    adjustedCongestion[i - 1].percent += movePercent;
+                }
+            }
+        }
+        
+        const labels = adjustedCongestion.map(item => item.time);
+        const data = adjustedCongestion.map(item => item.percent);
+        
+        const ctx = document.getElementById('congestionChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '混雑度（%）',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 10 }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // 天気データを取得する関数
+    async function fetchWeatherData() {
         try {
-            tempData = weather[0].timeSeries[2];
-        } catch (e) {
-            console.log('気温データが見つかりません:', e);
+            const url = "https://www.jma.go.jp/bosai/forecast/data/forecast/180000.json";
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('天気データの取得に失敗しました');
+            }
+            
+            const weather = await response.json();
+            
+            // 地域名を表示
+            const locationElement = document.getElementById("location");
+            if (locationElement && weather[1]) {
+                locationElement.innerHTML = 
+                    `${weather[1].publishingOffice}: ${weather[1].timeSeries[0].areas[0].area.name} ` +
+                    `<a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>`;
+            }
+            
+            // 天気予報を表示
+            displayWeatherForecast(weather);
+            
+            // 現在の天気データを取得
+            const currentWeatherData = getCurrentWeatherData(weather);
+            
+            // 混雑度グラフを作成
+            createCongestionChart(currentWeatherData);
+            
+        } catch (error) {
+            console.error('天気データの取得エラー:', error);
+            
+            // エラー時は現在の日付で基本の混雑度グラフを表示
+            const currentWeatherText = document.getElementById("currentWeatherText");
+            if (currentWeatherText) {
+                currentWeatherText.textContent = "天気データの取得に失敗しました。基本の混雑度を表示しています。";
+            }
+            
+            createCongestionChart();
         }
-        
-        // 最初の2日分を表示
-        for (let i = 0; i < Math.min(2, weatherCodes.length); i++) {
-            const temperatures = getTemperatureData(tempData, i);
-            const weatherItem = createWeatherItem(weatherCodes[i], timeDefines[i], temperatures);
-            weatherForecast.appendChild(weatherItem);
-        }
-    } catch (error) {
-        console.error('天気予報の表示エラー:', error);
-        weatherForecast.innerHTML = '<div class="weather-item">天気データの表示に失敗しました</div>';
     }
-}
 
-// 気温データを取得する関数
-function getTemperatureData(tempData, dayIndex) {
-    if (!tempData || !tempData.areas || !tempData.areas[0]) {
-        return { min: "--", max: "--" };
-    }
-    
-    try {
-        const area = tempData.areas[0];
-        let minTemp = "--";
-        let maxTemp = "--";
+    // 天気予報を表示する関数
+    function displayWeatherForecast(weather) {
+        const weatherForecast = document.getElementById("weatherForecast");
+        if (!weatherForecast) return;
         
-        // 最高気温
-        if (area.tempsMax && area.tempsMax[dayIndex] !== null && area.tempsMax[dayIndex] !== undefined) {
-            maxTemp = area.tempsMax[dayIndex];
+        // 既存の天気アイテムをクリア
+        weatherForecast.innerHTML = '';
+        
+        try {
+            const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
+            const timeDefines = weather[0].timeSeries[0].timeDefines;
+            
+            // 気温データを取得
+            let tempData = null;
+            try {
+                tempData = weather[0].timeSeries[2];
+            } catch (e) {
+                console.log('気温データが見つかりません:', e);
+            }
+            
+            // 最初の2日分を表示
+            for (let i = 0; i < Math.min(2, weatherCodes.length); i++) {
+                const temperatures = getTemperatureData(tempData, i);
+                const weatherItem = createWeatherItem(weatherCodes[i], timeDefines[i], temperatures);
+                weatherForecast.appendChild(weatherItem);
+            }
+        } catch (error) {
+            console.error('天気予報の表示エラー:', error);
+            weatherForecast.innerHTML = '<div class="weather-item">天気データの表示に失敗しました</div>';
+        }
+    }
+
+    // 気温データを取得する関数
+    function getTemperatureData(tempData, dayIndex) {
+        if (!tempData || !tempData.areas || !tempData.areas[0]) {
+            return { min: "--", max: "--" };
         }
         
-        // 最低気温
-        if (area.tempsMin && area.tempsMin[dayIndex] !== null && area.tempsMin[dayIndex] !== undefined) {
-            minTemp = area.tempsMin[dayIndex];
+        try {
+            const area = tempData.areas[0];
+            let minTemp = "--";
+            let maxTemp = "--";
+            
+            // 最高気温
+            if (area.tempsMax && area.tempsMax[dayIndex] !== null && area.tempsMax[dayIndex] !== undefined) {
+                maxTemp = area.tempsMax[dayIndex];
+            }
+            
+            // 最低気温
+            if (area.tempsMin && area.tempsMin[dayIndex] !== null && area.tempsMin[dayIndex] !== undefined) {
+                minTemp = area.tempsMin[dayIndex];
+            }
+            
+            return { min: minTemp, max: maxTemp };
+        } catch (error) {
+            console.error('気温データの取得エラー:', error);
+            return { min: "--", max: "--" };
         }
-        
-        return { min: minTemp, max: maxTemp };
-    } catch (error) {
-        console.error('気温データの取得エラー:', error);
-        return { min: "--", max: "--" };
     }
-}
 
-// 天気アイテムを作成する関数
-function createWeatherItem(weatherCodeValue, timeDefine, temperatures = { min: "--", max: "--" }) {
-    const weatherItem = document.createElement('div');
-    weatherItem.className = 'weather-item';
-    
-    const dt = new Date(timeDefine);
-    const weekdayCount = dt.getDay();
-    const month = String(dt.getMonth() + 1).padStart(2, '0');
-    const day = String(dt.getDate()).padStart(2, '0');
-    
-    const weatherInfo = weatherCode[weatherCodeValue] || ["", "", "不明"];
-    
-    weatherItem.innerHTML = `
-        <div class="date" style="color: ${weekdayCount === 0 ? 'red' : weekdayCount === 6 ? 'blue' : 'black'}">
-            ${month}/${day}(${dayList[weekdayCount]})
-        </div>
-        <img class="weather-img" src="https://www.jma.go.jp/bosai/forecast/img/${weatherInfo[0]}" alt="${weatherInfo[2]}">
-        <div class="weather-telop">${weatherInfo[2]}</div>
-        <div><span class="temp-min">${temperatures.min}℃</span>/<span class="temp-max">${temperatures.max}℃</span></div>
-    `;
-    
-    return weatherItem;
-}
+    // 天気アイテムを作成する関数
+    function createWeatherItem(weatherCodeValue, timeDefine, temperatures = { min: "--", max: "--" }) {
+        const weatherItem = document.createElement('div');
+        weatherItem.className = 'weather-item';
+        
+        const dt = new Date(timeDefine);
+        const weekdayCount = dt.getDay();
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        const day = String(dt.getDate()).padStart(2, '0');
+        
+        const weatherInfo = weatherCode[weatherCodeValue] || ["", "", "不明"];
+        
+        weatherItem.innerHTML = `
+            <div class="date" style="color: ${weekdayCount === 0 ? 'red' : weekdayCount === 6 ? 'blue' : 'black'}">
+                ${month}/${day}(${dayList[weekdayCount]})
+            </div>
+            <img class="weather-img" src="https://www.jma.go.jp/bosai/forecast/img/${weatherInfo[0]}" alt="${weatherInfo[2]}">
+            <div class="weather-telop">${weatherInfo[2]}</div>
+            <div><span class="temp-min">${temperatures.min}℃</span>/<span class="temp-max">${temperatures.max}℃</span></div>
+        `;
+        
+        return weatherItem;
+    }
 
-// 現在の天気データを取得する関数
-function getCurrentWeatherData(weather) {
-    try {
-        const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
-        const timeDefines = weather[0].timeSeries[0].timeDefines;
-        
-        const currentWeatherData = {
-            date: timeDefines[0],
-            telop: weatherCode[weatherCodes[0]] ? weatherCode[weatherCodes[0]][2] : "不明",
-            tempMin: "--",
-            tempMax: "--"
-        };
-        
-        // 現在の天気テキストを表示
-        const currentWeatherText = document.getElementById("currentWeatherText");
-        if (currentWeatherText) {
-            currentWeatherText.textContent = 
-                `現在の天気: ${currentWeatherData.telop} (${new Date(currentWeatherData.date).toLocaleDateString()})`;
+    // 現在の天気データを取得する関数
+    function getCurrentWeatherData(weather) {
+        try {
+            const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
+            const timeDefines = weather[0].timeSeries[0].timeDefines;
+            
+            const currentWeatherData = {
+                date: timeDefines[0],
+                telop: weatherCode[weatherCodes[0]] ? weatherCode[weatherCodes[0]][2] : "不明",
+                tempMin: "--",
+                tempMax: "--"
+            };
+            
+            // 現在の天気テキストを表示
+            const currentWeatherText = document.getElementById("currentWeatherText");
+            if (currentWeatherText) {
+                currentWeatherText.textContent = 
+                    `現在の天気: ${currentWeatherData.telop} (${new Date(currentWeatherData.date).toLocaleDateString()})`;
+            }
+            
+            return currentWeatherData;
+            
+        } catch (error) {
+            console.error('現在の天気データ取得エラー:', error);
+            return null;
         }
-        
-        return currentWeatherData;
-        
-    } catch (error) {
-        console.error('現在の天気データ取得エラー:', error);
-        return null;
     }
-}
 
-// ページ読み込み時に実行
-document.addEventListener('DOMContentLoaded', function() {
-    // Chart.jsが読み込まれるまで少し待つ
-    setTimeout(() => {
-        fetchWeatherData();
-    }, 100);
-});
-</script>
+    // ページ読み込み時に実行
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart.jsが読み込まれるまで少し待つ
+        setTimeout(() => {
+            fetchWeatherData();
+            // PDF読み込みを開始
+            extractScheduleFromPDF();
+        }, 100);
+    });
+    </script>
+</body>
+</html>
