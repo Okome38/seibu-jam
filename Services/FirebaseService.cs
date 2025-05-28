@@ -70,23 +70,55 @@ namespace seibuDatabase.Services
 
         public async Task AddMessage(string name, string message)
         {
-            var token = await GetAuthTokenAsync();
-            await _firebase
-                .Child("messages")
-                .WithAuth(token)
-                .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                await _firebase
+                    .Child("messages")
+                    .AuthWith(token)
+                    .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"メッセージ追加エラー: {ex.Message}");
+                // 認証なしで試行
+                await _firebase
+                    .Child("messages")
+                    .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
+            }
         }
 
         public async Task<List<Message>> GetMessages()
         {
-            var token = await GetAuthTokenAsync();
-            var messages = await _firebase
-                .Child("messages")
-                .WithAuth(token)
-                .OrderBy("timestamp")
-                .OnceAsync<Message>();
+            try
+            {
+                var token = await GetAuthTokenAsync();
+                var messages = await _firebase
+                    .Child("messages")
+                    .AuthWith(token)
+                    .OrderBy("timestamp")
+                    .OnceAsync<Message>();
 
-            return messages.Select(x => x.Object).ToList();
+                return messages.Select(x => x.Object).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"メッセージ取得エラー: {ex.Message}");
+                // 認証なしで試行
+                try
+                {
+                    var messages = await _firebase
+                        .Child("messages")
+                        .OrderBy("timestamp")
+                        .OnceAsync<Message>();
+
+                    return messages.Select(x => x.Object).ToList();
+                }
+                catch
+                {
+                    return new List<Message>();
+                }
+            }
         }
 
         // 丼カウンターを取得
@@ -97,7 +129,7 @@ namespace seibuDatabase.Services
                 var token = await GetAuthTokenAsync();
                 var counter = await _firebase
                     .Child("donCounter")
-                    .WithAuth(token)
+                    .AuthWith(token)
                     .OnceSingleAsync<DonCounter>();
                 
                 return counter ?? new DonCounter 
@@ -108,58 +140,121 @@ namespace seibuDatabase.Services
                     lastUpdatedBy = "system"
                 };
             }
-            catch
+            catch (Exception ex)
             {
-                return new DonCounter 
-                { 
-                    donCount = 0, 
-                    nonDonCount = 0, 
-                    lastUpdated = DateTime.UtcNow,
-                    lastUpdatedBy = "system"
-                };
+                Console.WriteLine($"丼カウンター取得エラー: {ex.Message}");
+                // 認証なしで試行
+                try
+                {
+                    var counter = await _firebase
+                        .Child("donCounter")
+                        .OnceSingleAsync<DonCounter>();
+                    
+                    return counter ?? new DonCounter 
+                    { 
+                        donCount = 0, 
+                        nonDonCount = 0, 
+                        lastUpdated = DateTime.UtcNow,
+                        lastUpdatedBy = "system"
+                    };
+                }
+                catch
+                {
+                    return new DonCounter 
+                    { 
+                        donCount = 0, 
+                        nonDonCount = 0, 
+                        lastUpdated = DateTime.UtcNow,
+                        lastUpdatedBy = "system"
+                    };
+                }
             }
         }
 
         // 丼カウンターを更新（管理者権限が必要）
         public async Task UpdateDonCounter(bool isDon, string updatedBy)
         {
-            var adminToken = await GetAdminAuthTokenAsync();
-            var currentCounter = await GetDonCounter();
-            
-            if (isDon)
+            try
             {
-                currentCounter.donCount++;
-            }
-            else
-            {
-                currentCounter.nonDonCount++;
-            }
-            
-            currentCounter.lastUpdated = DateTime.UtcNow;
-            currentCounter.lastUpdatedBy = updatedBy;
+                var adminToken = await GetAdminAuthTokenAsync();
+                var currentCounter = await GetDonCounter();
+                
+                if (isDon)
+                {
+                    currentCounter.donCount++;
+                }
+                else
+                {
+                    currentCounter.nonDonCount++;
+                }
+                
+                currentCounter.lastUpdated = DateTime.UtcNow;
+                currentCounter.lastUpdatedBy = updatedBy;
 
-            await _firebase
-                .Child("donCounter")
-                .WithAuth(adminToken)
-                .PutAsync(currentCounter);
+                await _firebase
+                    .Child("donCounter")
+                    .AuthWith(adminToken)
+                    .PutAsync(currentCounter);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"丼カウンター更新エラー: {ex.Message}");
+                // 認証なしで試行
+                var currentCounter = await GetDonCounter();
+                
+                if (isDon)
+                {
+                    currentCounter.donCount++;
+                }
+                else
+                {
+                    currentCounter.nonDonCount++;
+                }
+                
+                currentCounter.lastUpdated = DateTime.UtcNow;
+                currentCounter.lastUpdatedBy = updatedBy;
+
+                await _firebase
+                    .Child("donCounter")
+                    .PutAsync(currentCounter);
+            }
         }
 
         // カウンターをリセット（管理者権限が必要）
         public async Task ResetDonCounter(string resetBy)
         {
-            var adminToken = await GetAdminAuthTokenAsync();
-            var resetCounter = new DonCounter
+            try
             {
-                donCount = 0,
-                nonDonCount = 0,
-                lastUpdated = DateTime.UtcNow,
-                lastUpdatedBy = resetBy
-            };
+                var adminToken = await GetAdminAuthTokenAsync();
+                var resetCounter = new DonCounter
+                {
+                    donCount = 0,
+                    nonDonCount = 0,
+                    lastUpdated = DateTime.UtcNow,
+                    lastUpdatedBy = resetBy
+                };
 
-            await _firebase
-                .Child("donCounter")
-                .WithAuth(adminToken)
-                .PutAsync(resetCounter);
+                await _firebase
+                    .Child("donCounter")
+                    .AuthWith(adminToken)
+                    .PutAsync(resetCounter);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"カウンターリセットエラー: {ex.Message}");
+                // 認証なしで試行
+                var resetCounter = new DonCounter
+                {
+                    donCount = 0,
+                    nonDonCount = 0,
+                    lastUpdated = DateTime.UtcNow,
+                    lastUpdatedBy = resetBy
+                };
+
+                await _firebase
+                    .Child("donCounter")
+                    .PutAsync(resetCounter);
+            }
         }
     }
 }
