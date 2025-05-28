@@ -9,7 +9,7 @@ RUN dotnet restore
 # 必要な Firebase パッケージを追加（.csproj にまだ含まれていない場合）
 RUN dotnet add package FirebaseDatabase.net --version 5.0.0
 RUN dotnet add package FirebaseAuthentication.net --version 4.1.0
-RUN dotnet add package Firebase.Auth --version 2.1.0
+RUN dotnet add package Firebase.Auth --version 1.0.0
 
 # 残りのアプリケーションファイルをコピー
 COPY . .
