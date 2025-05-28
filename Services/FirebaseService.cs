@@ -13,7 +13,7 @@ namespace seibuDatabase.Services
 
         public FirebaseService()
         {
-            _authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyDKxJ8rF8qY4XyYz_4Xm-Q7h5gL2Pn9Abc")); // ここにFirebaseのAPIキーを設定
+            _authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAQm6zlL2FQkYUKj_yjGKgytN4vQuLtNak")); // ここにFirebaseのAPIキーを設定
             _firebase = new FirebaseClient("https://seibudatabase-default-rtdb.firebaseio.com/");
         }
 
