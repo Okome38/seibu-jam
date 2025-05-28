@@ -7,15 +7,32 @@ namespace seibuDatabase.Services
 {
     public class FirebaseService
     {
-        private readonly FirebaseClient _firebase;
+        private readonly string _databaseUrl = "https://seibudatabase-default-rtdb.firebaseio.com/";
         private readonly FirebaseAuthProvider _authProvider;
-        private string _authToken;
+        private string? _authToken;
 
         public FirebaseService()
         {
             var apiKey = Environment.GetEnvironmentVariable("FIREBASE_API_KEY") ?? "your-firebase-api-key-here";
             _authProvider = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
-            _firebase = new FirebaseClient("https://seibudatabase-default-rtdb.firebaseio.com/");
+        }
+
+        // Create Firebase client with authentication
+        private FirebaseClient GetAuthenticatedClient(string authToken)
+        {
+            return new FirebaseClient(
+                _databaseUrl,
+                new FirebaseOptions
+                {
+                    AuthTokenAsyncFactory = () => Task.FromResult(authToken)
+                }
+            );
+        }
+
+        // Create Firebase client without authentication
+        private FirebaseClient GetUnauthenticatedClient()
+        {
+            return new FirebaseClient(_databaseUrl);
         }
 
         // 匿名認証でユーザーを認証
@@ -73,16 +90,17 @@ namespace seibuDatabase.Services
             try
             {
                 var token = await GetAuthTokenAsync();
-                await _firebase
+                var firebase = GetAuthenticatedClient(token);
+                await firebase
                     .Child("messages")
-                    .AuthWith(token)
                     .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"メッセージ追加エラー: {ex.Message}");
                 // 認証なしで試行
-                await _firebase
+                var firebase = GetUnauthenticatedClient();
+                await firebase
                     .Child("messages")
                     .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
             }
@@ -93,9 +111,9 @@ namespace seibuDatabase.Services
             try
             {
                 var token = await GetAuthTokenAsync();
-                var messages = await _firebase
+                var firebase = GetAuthenticatedClient(token);
+                var messages = await firebase
                     .Child("messages")
-                    .AuthWith(token)
                     .OrderBy("timestamp")
                     .OnceAsync<Message>();
 
@@ -107,7 +125,8 @@ namespace seibuDatabase.Services
                 // 認証なしで試行
                 try
                 {
-                    var messages = await _firebase
+                    var firebase = GetUnauthenticatedClient();
+                    var messages = await firebase
                         .Child("messages")
                         .OrderBy("timestamp")
                         .OnceAsync<Message>();
@@ -127,9 +146,9 @@ namespace seibuDatabase.Services
             try
             {
                 var token = await GetAuthTokenAsync();
-                var counter = await _firebase
+                var firebase = GetAuthenticatedClient(token);
+                var counter = await firebase
                     .Child("donCounter")
-                    .AuthWith(token)
                     .OnceSingleAsync<DonCounter>();
                 
                 return counter ?? new DonCounter 
@@ -146,7 +165,8 @@ namespace seibuDatabase.Services
                 // 認証なしで試行
                 try
                 {
-                    var counter = await _firebase
+                    var firebase = GetUnauthenticatedClient();
+                    var counter = await firebase
                         .Child("donCounter")
                         .OnceSingleAsync<DonCounter>();
                     
@@ -191,9 +211,9 @@ namespace seibuDatabase.Services
                 currentCounter.lastUpdated = DateTime.UtcNow;
                 currentCounter.lastUpdatedBy = updatedBy;
 
-                await _firebase
+                var firebase = GetAuthenticatedClient(adminToken);
+                await firebase
                     .Child("donCounter")
-                    .AuthWith(adminToken)
                     .PutAsync(currentCounter);
             }
             catch (Exception ex)
@@ -214,7 +234,8 @@ namespace seibuDatabase.Services
                 currentCounter.lastUpdated = DateTime.UtcNow;
                 currentCounter.lastUpdatedBy = updatedBy;
 
-                await _firebase
+                var firebase = GetUnauthenticatedClient();
+                await firebase
                     .Child("donCounter")
                     .PutAsync(currentCounter);
             }
@@ -234,9 +255,9 @@ namespace seibuDatabase.Services
                     lastUpdatedBy = resetBy
                 };
 
-                await _firebase
+                var firebase = GetAuthenticatedClient(adminToken);
+                await firebase
                     .Child("donCounter")
-                    .AuthWith(adminToken)
                     .PutAsync(resetCounter);
             }
             catch (Exception ex)
@@ -251,7 +272,8 @@ namespace seibuDatabase.Services
                     lastUpdatedBy = resetBy
                 };
 
-                await _firebase
+                var firebase = GetUnauthenticatedClient();
+                await firebase
                     .Child("donCounter")
                     .PutAsync(resetCounter);
             }
