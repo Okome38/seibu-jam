@@ -1,5 +1,6 @@
 using Firebase.Database;
 using Firebase.Database.Query;
+using Firebase.Auth;
 using seibuDatabase.Models;
 
 namespace seibuDatabase.Services
@@ -7,25 +8,77 @@ namespace seibuDatabase.Services
     public class FirebaseService
     {
         private readonly FirebaseClient _firebase;
+        private readonly FirebaseAuthProvider _authProvider;
+        private string _authToken;
 
         public FirebaseService()
         {
+            _authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyDKxJ8rF8qY4XyYz_4Xm-Q7h5gL2Pn9Abc")); // ここにFirebaseのAPIキーを設定
             _firebase = new FirebaseClient("https://seibudatabase-default-rtdb.firebaseio.com/");
+        }
+
+        // 匿名認証でユーザーを認証
+        private async Task<string> GetAuthTokenAsync()
+        {
+            if (string.IsNullOrEmpty(_authToken))
+            {
+                try
+                {
+                    var auth = await _authProvider.SignInAnonymouslyAsync();
+                    _authToken = auth.FirebaseToken;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"認証エラー: {ex.Message}");
+                    throw;
+                }
+            }
+            return _authToken;
+        }
+
+        // 管理者として認証（丼カウンター用）
+        private async Task<string> GetAdminAuthTokenAsync()
+        {
+            try
+            {
+                // 管理者用の固定メールアドレスとパスワード
+                var auth = await _authProvider.SignInWithEmailAndPasswordAsync("admin@seibu.local", "seibu2025admin");
+                return auth.FirebaseToken;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"管理者認証エラー: {ex.Message}");
+                // 管理者アカウントが存在しない場合は作成
+                try
+                {
+                    var newAuth = await _authProvider.CreateUserWithEmailAndPasswordAsync("admin@seibu.local", "seibu2025admin");
+                    return newAuth.FirebaseToken;
+                }
+                catch (Exception createEx)
+                {
+                    Console.WriteLine($"管理者アカウント作成エラー: {createEx.Message}");
+                    throw;
+                }
+            }
         }
 
         public async Task AddMessage(string name, string message)
         {
+            var token = await GetAuthTokenAsync();
             await _firebase
-              .Child("messages")
-              .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
+                .Child("messages")
+                .WithAuth(token)
+                .PostAsync(new { name = name, message = message, timestamp = DateTime.UtcNow });
         }
 
         public async Task<List<Message>> GetMessages()
         {
+            var token = await GetAuthTokenAsync();
             var messages = await _firebase
-              .Child("messages")
-              .OrderBy("timestamp")
-              .OnceAsync<Message>();
+                .Child("messages")
+                .WithAuth(token)
+                .OrderBy("timestamp")
+                .OnceAsync<Message>();
 
             return messages.Select(x => x.Object).ToList();
         }
@@ -35,8 +88,10 @@ namespace seibuDatabase.Services
         {
             try
             {
+                var token = await GetAuthTokenAsync();
                 var counter = await _firebase
                     .Child("donCounter")
+                    .WithAuth(token)
                     .OnceSingleAsync<DonCounter>();
                 
                 return counter ?? new DonCounter 
@@ -59,9 +114,10 @@ namespace seibuDatabase.Services
             }
         }
 
-        // 丼カウンターを更新
+        // 丼カウンターを更新（管理者権限が必要）
         public async Task UpdateDonCounter(bool isDon, string updatedBy)
         {
+            var adminToken = await GetAdminAuthTokenAsync();
             var currentCounter = await GetDonCounter();
             
             if (isDon)
@@ -78,12 +134,14 @@ namespace seibuDatabase.Services
 
             await _firebase
                 .Child("donCounter")
+                .WithAuth(adminToken)
                 .PutAsync(currentCounter);
         }
 
-        // カウンターをリセット
+        // カウンターをリセット（管理者権限が必要）
         public async Task ResetDonCounter(string resetBy)
         {
+            var adminToken = await GetAdminAuthTokenAsync();
             var resetCounter = new DonCounter
             {
                 donCount = 0,
@@ -94,8 +152,8 @@ namespace seibuDatabase.Services
 
             await _firebase
                 .Child("donCounter")
+                .WithAuth(adminToken)
                 .PutAsync(resetCounter);
         }
     }
 }
-
