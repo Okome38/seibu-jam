@@ -1,26 +1,29 @@
 # ビルド用ステージ
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
-COPY . ./
-RUN dotnet publish -c Release -o out
+WORKDIR /src
 
-# 実行ステージ
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR /app
-COPY --from=build /app/out .
+# プロジェクトファイルを最初にコピーして復元
+COPY *.csproj .
+RUN dotnet restore
 
-# 既存のDockerfileのCOPY *.csproj ./の後に以下を追加
+# 残りのファイルをコピー
+COPY . .
 
-# Update Firebase packages to fix AuthWith issues
-RUN dotnet remove package FirebaseDatabase.net || true
-RUN dotnet remove package FirebaseAuthentication.net || true
+# パッケージの更新
 RUN dotnet add package FirebaseDatabase.net --version 5.0.0
 RUN dotnet add package FirebaseAuthentication.net --version 4.1.0
 
-# Continue with existing restore command
-RUN dotnet restore
+# プロジェクトを公開
+RUN dotnet publish -c Release -o /app/publish
 
-# Environment variables
+# 実行ステージ
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# ビルドステージから公開出力をコピー
+COPY --from=build /app/publish .
+
+# 環境変数（本番環境ではより安全な方法を使用）
 ENV FIREBASE_API_KEY=AIzaSyAQm6zlL2FQkYUKj_yjGKgytN4vQuLtNak
 ENV FIREBASE_ADMIN_EMAIL=admin@seibu.local
 ENV FIREBASE_ADMIN_PASSWORD=Oneshota@3150
