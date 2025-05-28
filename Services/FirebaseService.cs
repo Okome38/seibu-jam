@@ -98,4 +98,4 @@ namespace seibuDatabase.Services
         }
     }
 }
-これにさっきのやつを適切に追加して
+
