@@ -6,7 +6,7 @@
 <div class="container">
     <div class="text-center mb-4">
         <h1 class="display-4">🍚 寮昼食 丼カウンター 🍚</h1>
-        <p class="lead">今日の昼食は丼でしたか？</p>
+        <p class="lead">丼？</p>
     </div>
 
     <!-- エラー・成功メッセージ -->
@@ -31,7 +31,7 @@
         <div class="col-md-6">
             <div class="card border-success">
                 <div class="card-header bg-success text-white text-center">
-                    <h3>🍚 丼だった日</h3>
+                    <h3>🍚 丼日</h3>
                 </div>
                 <div class="card-body text-center">
                     <h1 class="display-1 text-success">@Model.donCount</h1>
@@ -42,7 +42,7 @@
         <div class="col-md-6">
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white text-center">
-                    <h3>🍽️ 丼じゃなかった日</h3>
+                    <h3>🍽️ 非丼日</h3>
                 </div>
                 <div class="card-body text-center">
                     <h1 class="display-1 text-primary">@Model.nonDonCount</h1>
@@ -107,14 +107,14 @@
                         <button type="submit" class="btn btn-success btn-lg w-100" 
                                 formaction="@Url.Action("UpdateCounter")" 
                                 onclick="document.querySelector('input[name=isDon]').value='true'">
-                            🍚 丼だった！
+                            🍚 丼！
                         </button>
                     </div>
                     <div class="col-md-6">
                         <button type="submit" class="btn btn-primary btn-lg w-100" 
                                 formaction="@Url.Action("UpdateCounter")" 
                                 onclick="document.querySelector('input[name=isDon]').value='false'">
-                            🍽️ 丼じゃなかった！
+                            🍽️ 非丼！
                         </button>
                     </div>
                 </div>
