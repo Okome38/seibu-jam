@@ -13,7 +13,8 @@ namespace seibuDatabase.Services
 
         public FirebaseService()
         {
-            _authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAQm6zlL2FQkYUKj_yjGKgytN4vQuLtNak")); // ここにFirebaseのAPIキーを設定
+            var apiKey = Environment.GetEnvironmentVariable("FIREBASE_API_KEY") ?? "your-firebase-api-key-here";
+            _authProvider = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
             _firebase = new FirebaseClient("https://seibudatabase-default-rtdb.firebaseio.com/");
         }
 
@@ -41,8 +42,10 @@ namespace seibuDatabase.Services
         {
             try
             {
-                // 管理者用の固定メールアドレスとパスワード
-                var auth = await _authProvider.SignInWithEmailAndPasswordAsync("admin@seibu.local", "seibu2025admin");
+                var adminEmail = Environment.GetEnvironmentVariable("FIREBASE_ADMIN_EMAIL") ?? "admin@seibu.local";
+                var adminPassword = Environment.GetEnvironmentVariable("FIREBASE_ADMIN_PASSWORD") ?? "seibu2025admin";
+                
+                var auth = await _authProvider.SignInWithEmailAndPasswordAsync(adminEmail, adminPassword);
                 return auth.FirebaseToken;
             }
             catch (Exception ex)
@@ -51,7 +54,10 @@ namespace seibuDatabase.Services
                 // 管理者アカウントが存在しない場合は作成
                 try
                 {
-                    var newAuth = await _authProvider.CreateUserWithEmailAndPasswordAsync("admin@seibu.local", "seibu2025admin");
+                    var adminEmail = Environment.GetEnvironmentVariable("FIREBASE_ADMIN_EMAIL") ?? "admin@seibu.local";
+                    var adminPassword = Environment.GetEnvironmentVariable("FIREBASE_ADMIN_PASSWORD") ?? "seibu2025admin";
+                    
+                    var newAuth = await _authProvider.CreateUserWithEmailAndPasswordAsync(adminEmail, adminPassword);
                     return newAuth.FirebaseToken;
                 }
                 catch (Exception createEx)
