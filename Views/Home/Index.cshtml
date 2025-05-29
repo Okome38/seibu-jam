@@ -1,3 +1,28 @@
+Okome38/seibu-jam
+main
+
+GITHUB
+
+このサイトのレイアウトやデザインを、よりモダンでユーザーフレンドリーにしたい。homeのIndexは混雑度グラフ、天気予報、掲示板の順に上から並べたい。丼カウンターはあまり変更しなくてよい。必要であれば変更すること。変更するのはあくまでデザインとレイアウトであって、それ以外は可能な限り変更しないこと。必要であればその旨言って。
+
+編集
+このサイトのデザインとレイアウトを確認しました。ホームページをモダンでユーザーフレンドリーなデザインに変更し、混雑度グラフ、天気予報、掲示板の順に並べ直します。
+
+主な変更点：
+
+ホームページ（Index.cshtml）のレイアウトとデザインを刷新
+レスポンシブデザインの改善
+カードベースのモダンなUI
+色彩とタイポグラフィの改善
+
+Modern Home Index View
+インタラクティブアーティファクト 
+
+
+
+
+
+
 @model List<seibuDatabase.Models.Message>
 @{
     ViewData["Title"] = "青武jam";
@@ -823,4 +848,91 @@ function displayWeatherForecast(weather) {
     }
 }
 
-// 気温データを
+// 気温データを取得する関数
+function getTemperatureData(tempData, dayIndex) {
+    if (!tempData || !tempData.areas || !tempData.areas[0]) {
+        return { min: "--", max: "--" };
+    }
+    
+    try {
+        const area = tempData.areas[0];
+        let minTemp = "--";
+        let maxTemp = "--";
+        
+        // 最高気温
+        if (area.tempsMax && area.tempsMax[dayIndex] !== null && area.tempsMax[dayIndex] !== undefined) {
+            maxTemp = area.tempsMax[dayIndex];
+        }
+        
+        // 最低気温
+        if (area.tempsMin && area.tempsMin[dayIndex] !== null && area.tempsMin[dayIndex] !== undefined) {
+            minTemp = area.tempsMin[dayIndex];
+        }
+        
+        return { min: minTemp, max: maxTemp };
+    } catch (error) {
+        console.error('気温データの取得エラー:', error);
+        return { min: "--", max: "--" };
+    }
+}
+
+// 天気アイテムを作成する関数
+function createWeatherItem(weatherCodeValue, timeDefine, temperatures = { min: "--", max: "--" }) {
+    const weatherItem = document.createElement('div');
+    weatherItem.className = 'weather-item';
+    
+    const dt = new Date(timeDefine);
+    const weekdayCount = dt.getDay();
+    const month = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    
+    const weatherInfo = weatherCode[weatherCodeValue] || ["", "", "不明"];
+    
+    weatherItem.innerHTML = `
+        <div class="date" style="color: ${weekdayCount === 0 ? 'red' : weekdayCount === 6 ? 'blue' : 'black'}">
+            ${month}/${day}(${dayList[weekdayCount]})
+        </div>
+        <img class="weather-img" src="https://www.jma.go.jp/bosai/forecast/img/${weatherInfo[0]}" alt="${weatherInfo[2]}">
+        <div class="weather-telop">${weatherInfo[2]}</div>
+        <div><span class="temp-min">${temperatures.min}℃</span>/<span class="temp-max">${temperatures.max}℃</span></div>
+    `;
+    
+    return weatherItem;
+}
+
+// 現在の天気データを取得する関数
+function getCurrentWeatherData(weather) {
+    try {
+        const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
+        const timeDefines = weather[0].timeSeries[0].timeDefines;
+        
+        const currentWeatherData = {
+            date: timeDefines[0],
+            telop: weatherCode[weatherCodes[0]] ? weatherCode[weatherCodes[0]][2] : "不明",
+            tempMin: "--",
+            tempMax: "--"
+        };
+        
+        // 現在の天気テキストを表示
+        const currentWeatherText = document.getElementById("currentWeatherText");
+        if (currentWeatherText) {
+            currentWeatherText.textContent = 
+                `現在の天気: ${currentWeatherData.telop} (${new Date(currentWeatherData.date).toLocaleDateString()})`;
+        }
+        
+        return currentWeatherData;
+        
+    } catch (error) {
+        console.error('現在の天気データ取得エラー:', error);
+        return null;
+    }
+}
+
+// ページ読み込み時に実行
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart.jsが読み込まれるまで少し待つ
+    setTimeout(() => {
+        fetchWeatherData();
+    }, 100);
+});
+</script>
