@@ -1,581 +1,148 @@
-
 @model List<seibuDatabase.Models.Message>
 @{
     ViewData["Title"] = "青武jam";
 }
 
-<div class="hero-section">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h1 class="hero-title">🎌 青武jam</h1>
-            <p class="hero-subtitle">福井高専 学生生活サポートダッシュボード</p>
-            <a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf" 
-               class="btn btn-outline-primary btn-sm" target="_blank">
-                📅 行事予定を確認
-            </a>
-        </div>
-    </div>
+<div class="text-center">
+    <h1 class="display-4">青武jam</h1>
+    <p>福井高専行事予定 <a href="https://www.fukui-nct.ac.jp/wp/wp-content/uploads/2025/04/2faa9754d9a33485215a756bb4c73525-1.pdf">ここから見る</a></p>
 </div>
 
-<div class="container">
-    <!-- 混雑度グラフセクション -->
-    <div class="section-card mb-5">
-        <div class="card-header-modern">
-            <h2 class="section-title">
-                <span class="icon">🛁</span>
-                寮の風呂 混雑度予測
-            </h2>
-            <p class="section-subtitle">現在の状況に基づいた予測データです</p>
-        </div>
-        <div class="chart-container">
-            <canvas id="congestionChart"></canvas>
+<!-- 天気予報セクション -->
+<div class="weather-section">
+    <h2>天気予報</h2>
+    <div id="weatherForecast" class="weather-forecast">
+        <div class="weather-item">
+            <div class="date">読み込み中...</div>
+            <img class="weather-img" alt="天気アイコン">
+            <div class="weather-telop">--</div>
+            <div><span class="temp-min">-℃</span>/<span class="temp-max">-℃</span></div>
         </div>
     </div>
-
-    <!-- 天気予報セクション -->
-    <div class="section-card mb-5">
-        <div class="card-header-modern">
-            <h2 class="section-title">
-                <span class="icon">🌤️</span>
-                今日・明日の天気
-            </h2>
-            <div id="location" class="weather-source"></div>
-        </div>
-        
-        <div id="weatherForecast" class="weather-forecast-grid">
-            <div class="weather-card loading">
-                <div class="weather-date">読み込み中...</div>
-                <div class="weather-icon-container">
-                    <div class="loading-spinner"></div>
-                </div>
-                <div class="weather-description">データを取得中</div>
-                <div class="weather-temp">
-                    <span class="temp-min">-℃</span>
-                    <span class="temp-separator">/</span>
-                    <span class="temp-max">-℃</span>
-                </div>
-            </div>
-        </div>
-        
-        <div id="currentWeatherText" class="weather-status"></div>
+    <div id="location">
+        <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>
     </div>
+    <div id="currentWeatherText"></div>
+</div>
 
-    <!-- 掲示板セクション -->
-    <div class="section-card">
-        <div class="card-header-modern">
-            <h2 class="section-title">
-                <span class="icon">💬</span>
-                コミュニティ掲示板
-            </h2>
-            <p class="section-subtitle">みんなで情報を共有しましょう</p>
-        </div>
+<!-- 混雑度グラフセクション -->
+<div class="congestion-section">
+    <h2>寮の風呂 混雑度（予測）</h2>
+    <canvas id="congestionChart" width="400" height="200"></canvas>
+</div>
 
-        <!-- 投稿フォーム -->
-        <div class="post-form-container">
-            <form asp-controller="Firebase" asp-action="PostMessage" method="post" class="post-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">お名前</label>
-                        <input type="text" name="name" class="form-control modern-input" 
-                               placeholder="ニックネームでもOK" required maxlength="50">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">メッセージ</label>
-                    <textarea name="message" class="form-control modern-input" rows="3" 
-                              placeholder="何か共有したいことはありますか？" required maxlength="500"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-post">
-                        <span class="btn-icon">📝</span>
-                        投稿する
-                    </button>
-                </div>
-            </form>
-        </div>
+<!-- 掲示板セクション -->
+<div class="bulletin-section">
+    <h1>掲示板</h1>
 
-        <!-- メッセージ一覧 -->
-        <div class="messages-section">
-            <div class="messages-header">
-                <h3 class="messages-title">最近の投稿</h3>
-                <span class="messages-count">
-                    @(Model?.Count ?? 0) 件の投稿
-                </span>
-            </div>
-            
-            <div class="messages-container">
-                @if (Model != null && Model.Count > 0)
-                {
-                    @foreach (var msg in Model.OrderByDescending(m => m.timestamp).Take(20))
-                    {
-                        <div class="message-card">
-                            <div class="message-header">
-                                <span class="message-author">@msg.name</span>
-                                <span class="message-time">@msg.timestamp.ToLocalTime().ToString("MM/dd HH:mm")</span>
-                            </div>
-                            <div class="message-content">
-                                @msg.message
-                            </div>
-                        </div>
-                    }
-                    
-                    @if (Model.Count > 20)
-                    {
-                        <div class="more-messages">
-                            <p class="text-muted">他に @(Model.Count - 20) 件の投稿があります</p>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="empty-state">
-                        <div class="empty-icon">💭</div>
-                        <p class="empty-text">まだ投稿がありません</p>
-                        <p class="empty-subtext">最初の投稿をしてみませんか？</p>
-                    </div>
-                }
-            </div>
+    <!-- 投稿フォーム -->
+    <form asp-controller="Firebase" asp-action="PostMessage" method="post">
+        <div class="form-group">
+            <label>名前:</label>
+            <input type="text" name="name" class="form-control" required />
         </div>
-    </div>
+        <div class="form-group">
+            <label>メッセージ:</label>
+            <textarea name="message" class="form-control" rows="4" required></textarea>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">投稿</button>
+        </div>
+    </form>
+
+    <hr />
+
+    <!-- メッセージ一覧表示 -->
+    <h2>投稿一覧</h2>
+    @if (Model != null && Model.Count > 0)
+    {
+        <ul class="list-unstyled">
+            @foreach (var msg in Model.OrderByDescending(m => m.timestamp))
+            {
+                <li class="post-item">
+                    <strong>@msg.name</strong>（@msg.timestamp.ToLocalTime().ToString("yyyy/MM/dd HH:mm")）:<br />
+                    @msg.message
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>投稿がまだありません。</p>
+    }
 </div>
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* 全体的なスタイル */
-:root {
-    --primary-color: #2563eb;
-    --secondary-color: #64748b;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --background-light: #f8fafc;
-    --background-white: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --border-light: #e2e8f0;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --radius: 12px;
-    --radius-sm: 8px;
+/* 天気予報スタイル */
+.weather-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
-body {
-    background-color: var(--background-light);
-    color: var(--text-primary);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    line-height: 1.6;
-}
-
-/* ヒーローセクション */
-.hero-section {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
-    color: white;
-    padding: 3rem 0;
-    margin: -1rem -15px 2rem -15px;
-}
-
-.hero-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.hero-subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-    opacity: 0.9;
-}
-
-/* セクションカード */
-.section-card {
-    background: var(--background-white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    border: 1px solid var(--border-light);
-}
-
-.card-header-modern {
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--border-light);
-    background: linear-gradient(90deg, #fafafa 0%, #ffffff 100%);
-}
-
-.section-title {
+.weather-forecast {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem 0;
-    color: var(--text-primary);
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin: 20px 0;
 }
 
-.section-title .icon {
-    font-size: 1.25rem;
+.weather-item {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 5px;
+    min-width: 100px;
 }
 
-.section-subtitle {
-    color: var(--text-secondary);
-    margin: 0;
-    font-size: 0.9rem;
+.weather-img {
+    width: 50px;
+    height: 50px;
+    display: block;
+    margin: 0 auto;
 }
 
-/* チャートコンテナ */
-.chart-container {
-    padding: 2rem;
-    background: var(--background-white);
+.temp-min {
+    color: blue;
+}
+
+.temp-max {
+    color: red;
+}
+
+/* 混雑度グラフスタイル */
+.congestion-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
 #congestionChart {
     max-width: 100%;
-    height: 300px !important;
+    height: auto;
 }
 
-/* 天気予報 */
-.weather-source {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+/* 掲示板スタイル */
+.bulletin-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
-.weather-source a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.weather-forecast-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    padding: 2rem;
-}
-
-.weather-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.weather-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.weather-card.loading {
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-}
-
-.weather-date {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-}
-
-.weather-icon-container {
-    margin: 1rem 0;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.weather-img {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border-light);
-    border-top: 3px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.weather-description {
-    font-weight: 500;
-    margin-bottom: 0.75rem;
-    color: var(--text-primary);
-}
-
-.weather-temp {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.temp-min {
-    color: var(--primary-color);
-}
-
-.temp-max {
-    color: var(--danger-color);
-}
-
-.temp-separator {
-    color: var(--text-secondary);
-    margin: 0 0.25rem;
-}
-
-.weather-status {
-    padding: 1rem 2rem;
-    background: var(--background-light);
-    border-top: 1px solid var(--border-light);
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    text-align: center;
-}
-
-/* 投稿フォーム */
-.post-form-container {
-    padding: 2rem;
-    background: var(--background-light);
-    border-bottom: 1px solid var(--border-light);
-}
-
-.post-form {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+.post-item {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
 }
 
 .form-group {
-    margin-bottom: 1rem;
-}
-
-.form-label {
-    display: block;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.modern-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    background: var(--background-white);
-}
-
-.modern-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 1.5rem;
-}
-
-.btn-post {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-post:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-}
-
-.btn-icon {
-    font-size: 1rem;
-}
-
-/* メッセージセクション */
-.messages-section {
-    padding: 2rem;
-}
-
-.messages-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.messages-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-primary);
-}
-
-.messages-count {
-    background: var(--background-light);
-    color: var(--text-secondary);
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.messages-container {
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-.message-card {
-    background: var(--background-white);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    padding: 1rem 1.25rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.2s ease;
-}
-
-.message-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-sm);
-}
-
-.message-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.message-author {
-    font-weight: 600;
-    color: var(--primary-color);
-    font-size: 0.9rem;
-}
-
-.message-time {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.message-content {
-    color: var(--text-primary);
-    line-height: 1.5;
-    word-wrap: break-word;
-}
-
-/* 空の状態 */
-.empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-secondary);
-}
-
-.empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-
-.empty-text {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-}
-
-.empty-subtext {
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.more-messages {
-    text-align: center;
-    padding: 1rem;
-    border-top: 1px solid var(--border-light);
-    margin-top: 1rem;
-}
-
-/* レスポンシブデザイン */
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-    
-    .section-card {
-        margin-left: -15px;
-        margin-right: -15px;
-        border-radius: 0;
-    }
-    
-    .card-header-modern,
-    .chart-container,
-    .post-form-container,
-    .messages-section {
-        padding: 1rem;
-    }
-    
-    .weather-forecast-grid {
-        grid-template-columns: 1fr;
-        padding: 1rem;
-    }
-    
-    .messages-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* スクロールバーのスタイル */
-.messages-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.messages-container::-webkit-scrollbar-track {
-    background: var(--background-light);
-    border-radius: 3px;
-}
-
-.messages-container::-webkit-scrollbar-thumb {
-    background: var(--border-light);
-    border-radius: 3px;
-}
-
-.messages-container::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
+    margin-bottom: 15px;
 }
 </style>
 
@@ -628,7 +195,7 @@ const baseCongestion = [
     { time: "23時", percent: 20 }
 ];
 
-// 混雑度グラフを作成する関数
+// 混雑度グラフを作成する関数（折れ線グラフに変更）
 function createCongestionChart(weatherData = null) {
     let adjustedCongestion = [...baseCongestion];
     
@@ -664,53 +231,29 @@ function createCongestionChart(weatherData = null) {
                 datasets: [{
                     label: '混雑度（%）',
                     data: data,
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    borderColor: 'rgba(37, 99, 235, 1)',
-                    borderWidth: 3,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
                     pointBorderColor: '#fff',
-                    pointBorderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    pointHoverBackgroundColor: 'rgba(37, 99, 235, 1)',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 3
+                    pointBorderWidth: 2,
+                    pointRadius: 5
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
                 scales: {
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        ticks: { 
-                            stepSize: 25,
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(226, 232, 240, 0.5)',
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                        ticks: { stepSize: 10 }
                     }
                 },
-                elements: {
-                    point: {
-                        hoverRadius: 8
+                plugins: {
+                    legend: {
+                        display: true
                     }
                 }
             }
@@ -734,7 +277,7 @@ async function fetchWeatherData() {
         const locationElement = document.getElementById("location");
         if (locationElement && weather[1]) {
             locationElement.innerHTML = 
-                `${weather[1].publishingOffice}: ${weather[1].timeSeries[0].areas[0].area.name} - ` +
+                `${weather[1].publishingOffice}: ${weather[1].timeSeries[0].areas[0].area.name} ` +
                 `<a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>`;
         }
         
@@ -753,26 +296,7 @@ async function fetchWeatherData() {
         // エラー時は現在の日付で基本の混雑度グラフを表示
         const currentWeatherText = document.getElementById("currentWeatherText");
         if (currentWeatherText) {
-            currentWeatherText.innerHTML = '<span style="color: #ef4444;">⚠️ 天気データの取得に失敗しました。基本の混雑度を表示しています。</span>';
-        }
-        
-        // ローディング状態を解除
-        const weatherForecast = document.getElementById("weatherForecast");
-        if (weatherForecast) {
-            weatherForecast.innerHTML = `
-                <div class="weather-card">
-                    <div class="weather-date">データ取得エラー</div>
-                    <div class="weather-icon-container">
-                        <span style="font-size: 2rem;">⚠️</span>
-                    </div>
-                    <div class="weather-description">天気情報を取得できませんでした</div>
-                    <div class="weather-temp">
-                        <span class="temp-min">-℃</span>
-                        <span class="temp-separator">/</span>
-                        <span class="temp-max">-℃</span>
-                    </div>
-                </div>
-            `;
+            currentWeatherText.textContent = "天気データの取得に失敗しました。基本の混雑度を表示しています。";
         }
         
         createCongestionChart();
@@ -807,20 +331,7 @@ function displayWeatherForecast(weather) {
         }
     } catch (error) {
         console.error('天気予報の表示エラー:', error);
-        weatherForecast.innerHTML = `
-            <div class="weather-card">
-                <div class="weather-date">エラー</div>
-                <div class="weather-icon-container">
-                    <span style="font-size: 2rem;">❌</span>
-                </div>
-                <div class="weather-description">天気データの表示に失敗しました</div>
-                <div class="weather-temp">
-                    <span class="temp-min">-℃</span>
-                    <span class="temp-separator">/</span>
-                    <span class="temp-max">-℃</span>
-                </div>
-            </div>
-        `;
+        weatherForecast.innerHTML = '<div class="weather-item">天気データの表示に失敗しました</div>';
     }
 }
 
