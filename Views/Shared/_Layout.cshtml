@@ -1,53 +1,409 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Fukuinct2025</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - 福井高専寮管理システム</title>
+    <meta name="description" content="福井高専寮生のための便利な管理システム - 天気予報、混雑度予測、掲示板、丼カウンター">
+    <meta name="keywords" content="福井高専,寮,管理,天気,混雑度,掲示板">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Fukuinct2025.styles.css" asp-append-version="true" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzI1NjNlYiIvPgo8dGV4dCB4PSIxNiIgeT0iMjAiIGZvbnQtZmFtaWx5PSJOb3RvIFNhbnMgSlAiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7lsKc8L3RleHQ+Cjwvc3ZnPgo=">
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <!-- Enhanced Navigation -->
+    <header class="enhanced-header">
+        <nav class="navbar navbar-expand-lg navbar-light enhanced-navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Fukuinct2025</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <!-- Brand with enhanced styling -->
+                <a class="navbar-brand enhanced-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-home me-2"></i>
+                    <span class="brand-text">福井高専寮管理</span>
+                    <span class="brand-subtitle">Fukuinct2025</span>
+                </a>
+                
+                <!-- Mobile menu button -->
+                <button class="navbar-toggler enhanced-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" 
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="メニューを開く">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                
+                <!-- Navigation items -->
+                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1 justify-content-end">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link enhanced-nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home me-1"></i>
+                                <span>ホーム</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link enhanced-nav-link" asp-area="" asp-controller="DonCounter" asp-action="Index">
+                                <i class="fas fa-bowl-rice me-1"></i>
+                                <span>丼カウンター</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="DonCounter" asp-action="Index">DonCounter</a>
+                            <a class="nav-link enhanced-nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="fas fa-gamepad me-1"></i>
+                                <span>趣味</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <!-- Main content with enhanced wrapper -->
+    <div class="main-wrapper">
+        <div class="container enhanced-container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <!-- Enhanced footer -->
+    <footer class="enhanced-footer">
         <div class="container">
-            &copy; 2025 - Fukuinct2025 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="footer-content">
+                <div class="footer-left">
+                    <span class="footer-text">
+                        &copy; 2025 福井高専寮管理システム
+                    </span>
+                </div>
+                <div class="footer-right">
+                    <a href="#" class="footer-link" onclick="scrollToTop(); return false;">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        トップへ戻る
+                    </a>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Enhanced Layout Scripts -->
+    <script>
+        // Smooth scroll to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Add active class to current nav item
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentLocation = location.pathname;
+            const menuItems = document.querySelectorAll('.enhanced-nav-link');
+            
+            menuItems.forEach(item => {
+                if(item.getAttribute('href') === currentLocation || 
+                   (currentLocation.includes('DonCounter') && item.textContent.includes('丼カウンター')) ||
+                   (currentLocation.includes('Privacy') && item.textContent.includes('趣味'))) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Add loading animation
+            document.body.classList.add('loaded');
+        });
+        
+        // Enhanced navbar scroll effect
+        let lastScrollTop = 0;
+        const navbar = document.querySelector('.enhanced-navbar');
+        
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                navbar.classList.add('navbar-hidden');
+            } else {
+                // Scrolling up
+                navbar.classList.remove('navbar-hidden');
+            }
+            
+            // Add background when scrolled
+            if (scrollTop > 50) {
+                navbar.classList.add('navbar-scrolled');
+            } else {
+                navbar.classList.remove('navbar-scrolled');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
+
+    <style>
+        /* Enhanced Header Styles */
+        .enhanced-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .enhanced-navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            padding: 0.5rem 0;
+        }
+        
+        .navbar-hidden {
+            transform: translateY(-100%);
+        }
+        
+        .enhanced-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        
+        .enhanced-brand:hover {
+            color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .brand-text {
+            font-size: 1.25rem;
+            line-height: 1.2;
+        }
+        
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+        
+        .enhanced-nav-link {
+            color: #64748b;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            margin: 0 0.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .enhanced-nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .enhanced-nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .enhanced-nav-link:hover,
+        .enhanced-nav-link.active {
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .enhanced-nav-link.active {
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+        
+        .enhanced-toggler {
+            border: none;
+            padding: 0.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .enhanced-toggler:hover {
+            background: rgba(37, 99, 235, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .enhanced-toggler:focus {
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+        }
+        
+        /* Main wrapper */
+        .main-wrapper {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+        
+        .enhanced-container {
+            position: relative;
+        }
+        
+        /* Enhanced Footer */
+        .enhanced-footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .enhanced-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .footer-text {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+        
+        .footer-link {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .footer-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Loading animation */
+        body {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        body.loaded {
+            opacity: 1;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .enhanced-navbar {
+                padding: 0.75rem 0;
+            }
+            
+            .brand-text {
+                font-size: 1.1rem;
+            }
+            
+            .brand-subtitle {
+                font-size: 0.7rem;
+            }
+            
+            .enhanced-nav-link {
+                padding: 1rem;
+                margin: 0.25rem 0;
+                border-radius: 0.75rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .main-wrapper {
+                padding: 1rem 0;
+            }
+        }
+        
+        /* Enhanced animations */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .enhanced-navbar {
+            animation: slideInDown 0.6s ease;
+        }
+        
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Focus improvements */
+        .enhanced-nav-link:focus,
+        .enhanced-brand:focus,
+        .footer-link:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+    </style>
 </body>
 </html>
