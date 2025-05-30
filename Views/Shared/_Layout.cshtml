@@ -99,59 +99,6 @@
         </div>
     </footer>
     
-    <!-- Enhanced Layout Scripts -->
-    <script>
-        // Smooth scroll to top
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-        
-        // Add active class to current nav item
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentLocation = location.pathname;
-            const menuItems = document.querySelectorAll('.enhanced-nav-link');
-            
-            menuItems.forEach(item => {
-                if(item.getAttribute('href') === currentLocation || 
-                   (currentLocation.includes('DonCounter') && item.textContent.includes('丼カウンター')) ||
-                   (currentLocation.includes('Privacy') && item.textContent.includes('趣味'))) {
-                    item.classList.add('active');
-                }
-            });
-            
-            // Add loading animation
-            document.body.classList.add('loaded');
-        });
-        
-        // Enhanced navbar scroll effect
-        let lastScrollTop = 0;
-        const navbar = document.querySelector('.enhanced-navbar');
-        
-        window.addEventListener('scroll', function() {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // Scrolling down
-                navbar.classList.add('navbar-hidden');
-            } else {
-                // Scrolling up
-                navbar.classList.remove('navbar-hidden');
-            }
-            
-            // Add background when scrolled
-            if (scrollTop > 50) {
-                navbar.classList.add('navbar-scrolled');
-            } else {
-                navbar.classList.remove('navbar-scrolled');
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-    </script>
-    
     @await RenderSectionAsync("Scripts", required: false)
 
     <style>
