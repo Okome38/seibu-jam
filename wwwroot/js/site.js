@@ -256,7 +256,7 @@ function displayWeatherForecast(weather) {
         // 気温データを取得
         let tempData = null;
         try {
-            tempData = weather[0].timeSeries[2];
+            tempData = weather[0].timeSeries[2].areas[0].temps;
         } catch (e) {
             console.log('気温データが見つかりません:', e);
         }
