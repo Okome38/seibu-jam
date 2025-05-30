@@ -1,78 +1,94 @@
+/* モダンダークテーマのカラーパレット */
+:root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-card: #333333;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #888888;
+    --accent-primary: #4a9eff;
+    --accent-secondary: #6366f1;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --border-color: #404040;
+    --shadow: rgba(0, 0, 0, 0.3);
+}
+
 html {
-  font-size: 14px;
+    font-size: 14px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
 }
 
+/* フォーカススタイルの更新 */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem var(--bg-secondary), 0 0 0 0.25rem var(--accent-primary);
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+/* フォームスタイル */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    color: var(--text-muted);
+    text-align: end;
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+    text-align: start;
 }
 
-.weatherForecast {
-  width: 840px;
-  height: 120px;
-  display: flex;
-  text-align: center;
-  border: 1px solid #000;
+.form-control {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
-.weather {
-  width: calc(100% / 7);
-  height: 100%;
-  box-sizing: border-box;
-  border: 1px solid #666;
+.form-control:focus {
+    background-color: var(--bg-card);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
 }
 
-.weather > div {
-  height: 20%;
-  font-size: 14px;
-}
-
-.weatherImg {
-  height: 42%;
-}
-
-.tempMin {
-  color: blue;
-}
-
-.tempMax {
-  color: red;
-}
-
-.post { 
-  border-bottom: 1px solid #ccc; 
-  padding: 0.5em 0; 
+.form-label {
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 /* 天気予報スタイル */
 .weather-section {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    margin: 30px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px var(--shadow);
+}
+
+.weather-section h2 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
 }
 
 .weather-forecast {
@@ -80,58 +96,336 @@ body {
     justify-content: space-around;
     flex-wrap: wrap;
     margin: 20px 0;
+    gap: 16px;
 }
 
 .weather-item {
     text-align: center;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 20px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
     margin: 5px;
-    min-width: 100px;
+    min-width: 120px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.weather-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-primary);
 }
 
 .weather-img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     display: block;
-    margin: 0 auto;
+    margin: 8px auto;
+    filter: brightness(1.1);
+}
+
+.date {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.weather-telop {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 8px 0;
 }
 
 .temp-min {
-    color: blue;
+    color: #60a5fa;
+    font-weight: 500;
 }
 
 .temp-max {
-    color: red;
+    color: #f87171;
+    font-weight: 500;
 }
 
 /* 混雑度グラフスタイル */
 .congestion-section {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    margin: 30px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px var(--shadow);
+}
+
+.congestion-section h2 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
 }
 
 #congestionChart {
     max-width: 100%;
     height: auto;
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px;
 }
 
 /* 掲示板スタイル */
 .bulletin-section {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    margin: 30px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px var(--shadow);
+}
+
+.bulletin-section h1,
+.bulletin-section h2 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.bulletin-section h1 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.bulletin-section h2 {
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--accent-primary);
+    padding-bottom: 8px;
+    margin-top: 30px;
 }
 
 .post-item {
-    border-bottom: 1px solid #ccc;
-    padding: 10px 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-primary);
+}
+
+.post-item strong {
+    color: var(--accent-primary);
+    font-weight: 600;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+/* ボタンスタイル */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 12px 24px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(74, 158, 255, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(74, 158, 255, 0.4);
+    background: linear-gradient(135deg, #3b82f6 0%, #5b52d9 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #404040 100%);
+    border-color: var(--accent-primary);
+}
+
+/* カードスタイル */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px var(--shadow);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 16px 16px 0 0 !important;
+    padding: 20px 24px;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 24px;
+    color: var(--text-primary);
+}
+
+/* アラートスタイル */
+.alert {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    color: #10b981;
+    border-left: 4px solid var(--success);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+    color: #ef4444;
+    border-left: 4px solid var(--danger);
+}
+
+/* プログレスバー */
+.progress {
+    height: 8px;
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.bg-success {
+    background: linear-gradient(90deg, var(--success) 0%, #059669 100%) !important;
+}
+
+.bg-primary {
+    background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-secondary) 100%) !important;
+}
+
+/* テキストカラー */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-primary {
+    color: var(--accent-primary) !important;
+}
+
+.text-success {
+    color: var(--success) !important;
+}
+
+/* リンクスタイル */
+a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
+/* コンテナスタイル */
+.container {
+    background: rgba(45, 45, 45, 0.3);
+    border-radius: 20px;
+    padding: 30px;
+    margin-top: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px var(--shadow);
+}
+
+/* タイトルスタイル */
+.display-4 {
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.display-1 {
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .weather-forecast {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .weather-item {
+        max-width: 280px;
+        width: 100%;
+    }
+    
+    .container {
+        padding: 20px;
+        margin: 10px;
+        border-radius: 16px;
+    }
+    
+    .card-body {
+        padding: 16px;
+    }
+    
+    .weather-section,
+    .congestion-section,
+    .bulletin-section {
+        padding: 16px;
+        margin: 20px 0;
+    }
 }
