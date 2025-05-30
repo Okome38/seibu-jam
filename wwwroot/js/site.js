@@ -245,25 +245,19 @@ async function fetchWeatherData() {
 function displayWeatherForecast(weather) {
     const weatherForecast = document.getElementById("weatherForecast");
     if (!weatherForecast) return;
-    
-    // 既存の天気アイテムをクリア
     weatherForecast.innerHTML = '';
-    
+
     try {
         const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
         const timeDefines = weather[0].timeSeries[0].timeDefines;
-        
-        // 気温データを取得
-        let tempData = null;
+        let tempArea = null;
         try {
-            tempData = weather[0].timeSeries[2].areas[0].temps;
+            tempArea = weather[0].timeSeries[2].areas[0];
         } catch (e) {
             console.log('気温データが見つかりません:', e);
         }
-        
-        // 最初の2日分を表示
         for (let i = 0; i < Math.min(2, weatherCodes.length); i++) {
-            const temperatures = getTemperatureData(tempData, i);
+            const temperatures = getTemperatureData(tempArea, i);
             const weatherItem = createWeatherItem(weatherCodes[i], timeDefines[i], temperatures);
             weatherForecast.appendChild(weatherItem);
         }
@@ -273,33 +267,26 @@ function displayWeatherForecast(weather) {
     }
 }
 
-// 気温データを取得する関数
-function getTemperatureData(tempData, dayIndex) {
-    if (!tempData || !tempData.areas || !tempData.areas[0]) {
+function getTemperatureData(tempArea, dayIndex) {
+    if (!tempArea) {
         return { min: "--", max: "--" };
     }
-    
     try {
-        const area = tempData.areas[0];
         let minTemp = "--";
         let maxTemp = "--";
-        
-        // 最高気温
-        if (area.tempsMax && area.tempsMax[dayIndex] !== null && area.tempsMax[dayIndex] !== undefined) {
-            maxTemp = area.tempsMax[dayIndex];
+        if (tempArea.tempsMax && tempArea.tempsMax[dayIndex] !== null && tempArea.tempsMax[dayIndex] !== undefined) {
+            maxTemp = tempArea.tempsMax[dayIndex];
         }
-        
-        // 最低気温
-        if (area.tempsMin && area.tempsMin[dayIndex] !== null && area.tempsMin[dayIndex] !== undefined) {
-            minTemp = area.tempsMin[dayIndex];
+        if (tempArea.tempsMin && tempArea.tempsMin[dayIndex] !== null && tempArea.tempsMin[dayIndex] !== undefined) {
+            minTemp = tempArea.tempsMin[dayIndex];
         }
-        
         return { min: minTemp, max: maxTemp };
     } catch (error) {
         console.error('気温データの取得エラー:', error);
         return { min: "--", max: "--" };
     }
 }
+
 
 // 天気アイテムを作成する関数
 function createWeatherItem(weatherCodeValue, timeDefine, temperatures = { min: "--", max: "--" }) {
