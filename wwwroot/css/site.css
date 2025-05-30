@@ -1,18 +1,22 @@
-/* モダンダークテーマのカラーパレット */
+/* モダンソフトテーマのカラーパレット */
 :root {
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2d2d2d;
-    --bg-card: #333333;
-    --text-primary: #ffffff;
-    --text-secondary: #b3b3b3;
-    --text-muted: #888888;
-    --accent-primary: #4a9eff;
-    --accent-secondary: #6366f1;
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-accent: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --accent-primary: #3b82f6;
+    --accent-secondary: #8b5cf6;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --border-color: #404040;
-    --shadow: rgba(0, 0, 0, 0.3);
+    --border-color: #e2e8f0;
+    --shadow: rgba(0, 0, 0, 0.08);
+    --shadow-hover: rgba(0, 0, 0, 0.12);
+    --gradient-light: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 }
 
 html {
@@ -29,15 +33,16 @@ html {
 
 body {
     margin-bottom: 60px;
-    background-color: var(--bg-primary);
+    background: var(--gradient-light);
     color: var(--text-primary);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
+    min-height: 100vh;
 }
 
 /* フォーカススタイルの更新 */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem var(--bg-secondary), 0 0 0 0.25rem var(--accent-primary);
+    box-shadow: 0 0 0 0.1rem var(--bg-card), 0 0 0 0.25rem var(--accent-primary);
 }
 
 html {
@@ -56,290 +61,308 @@ html {
 }
 
 .form-control {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-color);
     color: var(--text-primary);
-    border-radius: 8px;
+    border-radius: 12px;
     transition: all 0.3s ease;
+    padding: 12px 16px;
 }
 
 .form-control:focus {
     background-color: var(--bg-card);
     border-color: var(--accent-primary);
     color: var(--text-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-label {
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
 /* 天気予報スタイル */
 .weather-section {
     margin: 30px 0;
-    padding: 24px;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    padding: 32px;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px var(--shadow);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px var(--shadow);
 }
 
 .weather-section h2 {
     color: var(--text-primary);
-    font-weight: 600;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    font-size: 1.75rem;
 }
 
 .weather-forecast {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-    margin: 20px 0;
-    gap: 16px;
+    margin: 24px 0;
+    gap: 20px;
 }
 
 .weather-item {
     text-align: center;
-    padding: 20px 16px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin: 5px;
-    min-width: 120px;
+    padding: 24px 20px;
+    background: var(--gradient-card);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    margin: 8px;
+    min-width: 140px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 12px var(--shadow);
 }
 
 .weather-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px var(--shadow-hover);
     border-color: var(--accent-primary);
+    background: var(--bg-card);
 }
 
 .weather-img {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
     display: block;
-    margin: 8px auto;
-    filter: brightness(1.1);
+    margin: 12px auto;
+    filter: drop-shadow(0 2px 4px var(--shadow));
 }
 
 .date {
-    font-weight: 600;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: var(--text-primary);
 }
 
 .weather-telop {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
-    margin: 8px 0;
+    margin: 12px 0;
+    font-weight: 500;
 }
 
 .temp-min {
-    color: #60a5fa;
-    font-weight: 500;
+    color: #0ea5e9;
+    font-weight: 600;
 }
 
 .temp-max {
-    color: #f87171;
-    font-weight: 500;
+    color: #f97316;
+    font-weight: 600;
 }
 
 /* 混雑度グラフスタイル */
 .congestion-section {
     margin: 30px 0;
-    padding: 24px;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    padding: 32px;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px var(--shadow);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px var(--shadow);
 }
 
 .congestion-section h2 {
     color: var(--text-primary);
-    font-weight: 600;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    font-size: 1.75rem;
 }
 
 #congestionChart {
     max-width: 100%;
     height: auto;
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
 }
 
 /* 掲示板スタイル */
 .bulletin-section {
     margin: 30px 0;
-    padding: 24px;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+    padding: 32px;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px var(--shadow);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px var(--shadow);
 }
 
 .bulletin-section h1,
 .bulletin-section h2 {
     color: var(--text-primary);
-    font-weight: 600;
-    margin-bottom: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
 }
 
 .bulletin-section h1 {
-    font-size: 2rem;
-    margin-bottom: 30px;
+    font-size: 2.25rem;
+    margin-bottom: 32px;
 }
 
 .bulletin-section h2 {
-    font-size: 1.5rem;
-    border-bottom: 2px solid var(--accent-primary);
-    padding-bottom: 8px;
-    margin-top: 30px;
+    font-size: 1.75rem;
+    border-bottom: 3px solid var(--accent-primary);
+    padding-bottom: 12px;
+    margin-top: 32px;
 }
 
 .post-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
+    background: var(--gradient-card);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px var(--shadow);
 }
 
 .post-item:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--shadow-hover);
     border-color: var(--accent-primary);
+    background: var(--bg-card);
 }
 
 .post-item strong {
     color: var(--accent-primary);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 /* ボタンスタイル */
 .btn {
-    border-radius: 8px;
-    font-weight: 500;
+    border-radius: 12px;
+    font-weight: 600;
     transition: all 0.3s ease;
     border: none;
-    padding: 12px 24px;
+    padding: 14px 28px;
+    font-size: 1rem;
 }
 
 .btn-primary {
     background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
     color: white;
-    box-shadow: 0 4px 16px rgba(74, 158, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(74, 158, 255, 0.4);
-    background: linear-gradient(135deg, #3b82f6 0%, #5b52d9 100%);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
 }
 
 .btn-success {
     background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
     color: white;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .btn-success:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
 }
 
 .btn-warning {
     background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
     color: white;
-    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
 
 .btn-warning:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+    background: var(--bg-card);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow);
 }
 
 .btn-secondary:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, #404040 100%);
+    background: var(--bg-secondary);
     border-color: var(--accent-primary);
+    box-shadow: 0 6px 20px var(--shadow-hover);
+    color: var(--text-primary);
 }
 
 /* カードスタイル */
 .card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px var(--shadow);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px var(--shadow);
     transition: all 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px var(--shadow);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px var(--shadow-hover);
 }
 
 .card-header {
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
-    border-bottom: 1px solid var(--border-color);
+    background: var(--gradient-light);
+    border-bottom: 2px solid var(--border-color);
     color: var(--text-primary);
-    border-radius: 16px 16px 0 0 !important;
-    padding: 20px 24px;
-    font-weight: 600;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 24px 28px;
+    font-weight: 700;
+    font-size: 1.1rem;
 }
 
 .card-body {
-    padding: 24px;
+    padding: 28px;
     color: var(--text-primary);
 }
 
 /* アラートスタイル */
 .alert {
-    border-radius: 12px;
+    border-radius: 16px;
     border: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    box-shadow: 0 4px 15px var(--shadow);
+    margin-bottom: 24px;
+    padding: 20px 24px;
 }
 
 .alert-success {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-    color: #10b981;
+    color: #059669;
     border-left: 4px solid var(--success);
 }
 
 .alert-danger {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-    color: #ef4444;
+    color: #dc2626;
     border-left: 4px solid var(--danger);
 }
 
 /* プログレスバー */
 .progress {
-    height: 8px;
+    height: 12px;
     background-color: var(--bg-secondary);
-    border-radius: 4px;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
 }
 
 .progress-bar {
     transition: width 0.6s ease;
+    border-radius: 8px;
 }
 
 .bg-success {
@@ -368,36 +391,61 @@ a {
     color: var(--accent-primary);
     text-decoration: none;
     transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 a:hover {
-    color: #3b82f6;
+    color: #2563eb;
     text-decoration: underline;
 }
 
 /* コンテナスタイル */
 .container {
-    background: rgba(45, 45, 45, 0.3);
-    border-radius: 20px;
-    padding: 30px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 24px;
+    padding: 40px;
     margin-top: 20px;
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* タイトルスタイル */
 .display-4 {
-    font-weight: 700;
+    font-weight: 800;
     background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .display-1 {
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-weight: 800;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ナビゲーションバーのオーバーライド */
+.navbar-light {
+    background-color: var(--bg-card) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 10px var(--shadow) !important;
+}
+
+.navbar-brand, .nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}
+
+.nav-link:hover {
+    color: var(--accent-primary) !important;
+}
+
+/* フッターのオーバーライド */
+.footer {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
 }
 
 /* レスポンシブ対応 */
@@ -408,24 +456,29 @@ a:hover {
     }
     
     .weather-item {
-        max-width: 280px;
+        max-width: 320px;
         width: 100%;
     }
     
     .container {
-        padding: 20px;
-        margin: 10px;
-        border-radius: 16px;
+        padding: 24px;
+        margin: 16px;
+        border-radius: 20px;
     }
     
     .card-body {
-        padding: 16px;
+        padding: 20px;
     }
     
     .weather-section,
     .congestion-section,
     .bulletin-section {
-        padding: 16px;
-        margin: 20px 0;
+        padding: 24px;
+        margin: 24px 0;
+    }
+    
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.95rem;
     }
 }
