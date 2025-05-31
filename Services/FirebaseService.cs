@@ -2,6 +2,8 @@ using Firebase.Database;
 using Firebase.Database.Query;
 using Firebase.Auth;
 using seibuDatabase.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace seibuDatabase.Services
 {
@@ -90,6 +92,17 @@ namespace seibuDatabase.Services
             return _adminToken;
         }
 
+        // ユーザーIDのハッシュ化（IPアドレス + User-Agent）
+        private string GetUserHash(string ipAddress, string userAgent)
+        {
+            var input = $"{ipAddress}_{userAgent}";
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
         // メッセージを追加（匿名認証で実行）
         public async Task AddMessage(string name, string message)
         {
@@ -118,7 +131,10 @@ namespace seibuDatabase.Services
                     .PostAsync(new { 
                         name = name, 
                         message = message, 
-                        timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+                        timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                        likeCount = 0,
+                        dislikeCount = 0,
+                        reactions = new Dictionary<string, string>()
                     });
             }
             catch (Exception ex)
@@ -141,7 +157,15 @@ namespace seibuDatabase.Services
 
                 return messages
                     .Where(x => x.Object != null)
-                    .Select(x => x.Object)
+                    .Select(x => new Message
+                    {
+                        name = x.Object.name,
+                        message = x.Object.message,
+                        timestamp = x.Object.timestamp,
+                        likeCount = x.Object.likeCount,
+                        dislikeCount = x.Object.dislikeCount,
+                        reactions = x.Object.reactions ?? new Dictionary<string, string>()
+                    })
                     .OrderByDescending(x => x.timestamp)
                     .Take(100) // 最新100件まで表示
                     .ToList();
@@ -150,6 +174,140 @@ namespace seibuDatabase.Services
             {
                 Console.WriteLine($"メッセージ取得エラー: {ex.Message}");
                 return new List<Message>();
+            }
+        }
+
+        // メッセージにリアクション（いいね/よくないね）を追加
+        public async Task<bool> AddReaction(string messageId, bool isLike, string ipAddress, string userAgent)
+        {
+            try
+            {
+                var userHash = GetUserHash(ipAddress, userAgent);
+                var token = await GetAuthTokenAsync();
+                var firebase = GetAuthenticatedClient(token);
+
+                // 現在のメッセージを取得
+                var messageSnapshot = await firebase
+                    .Child("messages")
+                    .Child(messageId)
+                    .OnceSingleAsync<object>();
+
+                if (messageSnapshot == null)
+                {
+                    return false; // メッセージが存在しない
+                }
+
+                var messageData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(
+                    messageSnapshot.ToString());
+
+                // 現在のリアクション情報を取得
+                var reactions = new Dictionary<string, string>();
+                if (messageData.ContainsKey("reactions") && messageData["reactions"] != null)
+                {
+                    var reactionsJson = messageData["reactions"].ToString();
+                    reactions = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(reactionsJson) 
+                               ?? new Dictionary<string, string>();
+                }
+
+                var currentLikeCount = messageData.ContainsKey("likeCount") ? Convert.ToInt32(messageData["likeCount"]) : 0;
+                var currentDislikeCount = messageData.ContainsKey("dislikeCount") ? Convert.ToInt32(messageData["dislikeCount"]) : 0;
+
+                // ユーザーの過去のリアクションをチェック
+                var newReaction = isLike ? "like" : "dislike";
+                
+                if (reactions.ContainsKey(userHash))
+                {
+                    var previousReaction = reactions[userHash];
+                    
+                    if (previousReaction == newReaction)
+                    {
+                        // 同じリアクションの場合は取り消し
+                        reactions.Remove(userHash);
+                        if (isLike)
+                            currentLikeCount = Math.Max(0, currentLikeCount - 1);
+                        else
+                            currentDislikeCount = Math.Max(0, currentDislikeCount - 1);
+                    }
+                    else
+                    {
+                        // 異なるリアクションの場合は変更
+                        reactions[userHash] = newReaction;
+                        if (isLike)
+                        {
+                            currentLikeCount++;
+                            currentDislikeCount = Math.Max(0, currentDislikeCount - 1);
+                        }
+                        else
+                        {
+                            currentDislikeCount++;
+                            currentLikeCount = Math.Max(0, currentLikeCount - 1);
+                        }
+                    }
+                }
+                else
+                {
+                    // 新しいリアクション
+                    reactions[userHash] = newReaction;
+                    if (isLike)
+                        currentLikeCount++;
+                    else
+                        currentDislikeCount++;
+                }
+
+                // メッセージを更新
+                var updates = new Dictionary<string, object>
+                {
+                    [$"messages/{messageId}/likeCount"] = currentLikeCount,
+                    [$"messages/{messageId}/dislikeCount"] = currentDislikeCount,
+                    [$"messages/{messageId}/reactions"] = reactions
+                };
+
+                await firebase.UpdateAsync(updates);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"リアクション追加エラー: {ex.Message}");
+                return false;
+            }
+        }
+
+        // ユーザーのリアクション状態を取得
+        public async Task<Dictionary<string, string>> GetUserReactions(string ipAddress, string userAgent)
+        {
+            try
+            {
+                var userHash = GetUserHash(ipAddress, userAgent);
+                var result = new Dictionary<string, string>();
+                
+                var firebase = GetPublicClient();
+                var messages = await firebase
+                    .Child("messages")
+                    .OnceAsync<object>();
+
+                foreach (var msg in messages)
+                {
+                    var messageData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(
+                        msg.Object.ToString());
+                    
+                    if (messageData.ContainsKey("reactions") && messageData["reactions"] != null)
+                    {
+                        var reactionsJson = messageData["reactions"].ToString();
+                        var reactions = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(reactionsJson);
+                        
+                        if (reactions != null && reactions.ContainsKey(userHash))
+                        {
+                            result[msg.Key] = reactions[userHash];
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ユーザーリアクション取得エラー: {ex.Message}");
+                return new Dictionary<string, string>();
             }
         }
 
