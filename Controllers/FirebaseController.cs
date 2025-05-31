@@ -26,6 +26,33 @@ namespace seibuDatabase.Controllers
             var messages = await _firebaseService.GetMessages();
             return View(messages); // Views/Firebase/Messages.cshtml に表示
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddReaction(string messageId, bool isLike)
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var success = await _firebaseService.AddReaction(messageId, isLike, ipAddress, userAgent);
+            
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                // Ajax リクエストの場合は JSON で結果を返す
+                return Json(new { success = success });
+            }
+            
+            // 通常のリクエストの場合はリダイレクト
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserReactions()
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            
+            var reactions = await _firebaseService.GetUserReactions(ipAddress, userAgent);
+            return Json(reactions);
+        }
     }
 }
-
