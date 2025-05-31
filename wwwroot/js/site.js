@@ -219,8 +219,11 @@ async function fetchWeatherData() {
                 `<a href="https://www.jma.go.jp/bosai/forecast/" target="_blank">気象庁のデータを元に作成</a>`;
         }
         
+        // 気温データの解析とリスト作成
+        const temperatureData = analyzeTemperatureData(weather);
+        
         // 天気予報を表示
-        displayWeatherForecast(weather);
+        displayWeatherForecast(weather, temperatureData);
         
         // 現在の天気データを取得
         const currentWeatherData = getCurrentWeatherData(weather);
@@ -241,8 +244,49 @@ async function fetchWeatherData() {
     }
 }
 
+// 気温データを解析する関数（参考コードを元に修正）
+function analyzeTemperatureData(weather) {
+    const tempsMinList = [];
+    const tempsMaxList = [];
+    
+    try {
+        // 今日・明日の気温データ
+        const isTodaysData = weather[0].timeSeries[2].timeDefines.length === 4;
+        const temps = weather[0].timeSeries[2].areas[0].temps;
+        
+        if (isTodaysData) {
+            tempsMinList.push(temps[0] === temps[1] ? "--" : temps[0], temps[2]);
+            tempsMaxList.push(temps[1], temps[3]);
+        } else {
+            tempsMinList.push("--", temps[0]);
+            tempsMaxList.push("--", temps[1]);
+        }
+        
+        // 週間予報の気温データ
+        if (weather[1] && weather[1].timeSeries && weather[1].timeSeries[1]) {
+            const weeklyTempsMin = weather[1].timeSeries[1].areas[0].tempsMin;
+            const weeklyTempsMax = weather[1].timeSeries[1].areas[0].tempsMax;
+            
+            // 明日の翌日から5日分
+            const timeDefines = weather[0].timeSeries[0].timeDefines;
+            const startCount = weather[1].timeSeries[0].timeDefines.indexOf(timeDefines[1]) + 1;
+            
+            for (let i = startCount; i < startCount + 5 && i < weeklyTempsMin.length; i++) {
+                tempsMinList.push(weeklyTempsMin[i] || "--");
+                tempsMaxList.push(weeklyTempsMax[i] || "--");
+            }
+        }
+        
+        return { tempsMinList, tempsMaxList };
+        
+    } catch (error) {
+        console.error('気温データの解析エラー:', error);
+        return { tempsMinList: [], tempsMaxList: [] };
+    }
+}
+
 // 天気予報を表示する関数
-function displayWeatherForecast(weather) {
+function displayWeatherForecast(weather, temperatureData) {
     const weatherForecast = document.getElementById("weatherForecast");
     if (!weatherForecast) return;
     weatherForecast.innerHTML = '';
@@ -250,14 +294,13 @@ function displayWeatherForecast(weather) {
     try {
         const weatherCodes = weather[0].timeSeries[0].areas[0].weatherCodes;
         const timeDefines = weather[0].timeSeries[0].timeDefines;
-        let tempArea = null;
-        try {
-            tempArea = weather[0].timeSeries[2].areas[0];
-        } catch (e) {
-            console.log('気温データが見つかりません:', e);
-        }
+        
+        // 今日・明日の2日分を表示
         for (let i = 0; i < Math.min(2, weatherCodes.length); i++) {
-            const temperatures = getTemperatureData(tempArea, i);
+            const temperatures = {
+                min: temperatureData.tempsMinList[i] || "--",
+                max: temperatureData.tempsMaxList[i] || "--"
+            };
             const weatherItem = createWeatherItem(weatherCodes[i], timeDefines[i], temperatures);
             weatherForecast.appendChild(weatherItem);
         }
@@ -266,27 +309,6 @@ function displayWeatherForecast(weather) {
         weatherForecast.innerHTML = '<div class="weather-item">天気データの表示に失敗しました</div>';
     }
 }
-
-function getTemperatureData(tempArea, dayIndex) {
-    if (!tempArea) {
-        return { min: "--", max: "--" };
-    }
-    try {
-        let minTemp = "--";
-        let maxTemp = "--";
-        if (tempArea.tempsMax && tempArea.tempsMax[dayIndex] !== null && tempArea.tempsMax[dayIndex] !== undefined) {
-            maxTemp = tempArea.tempsMax[dayIndex];
-        }
-        if (tempArea.tempsMin && tempArea.tempsMin[dayIndex] !== null && tempArea.tempsMin[dayIndex] !== undefined) {
-            minTemp = tempArea.tempsMin[dayIndex];
-        }
-        return { min: minTemp, max: maxTemp };
-    } catch (error) {
-        console.error('気温データの取得エラー:', error);
-        return { min: "--", max: "--" };
-    }
-}
-
 
 // 天気アイテムを作成する関数
 function createWeatherItem(weatherCodeValue, timeDefine, temperatures = { min: "--", max: "--" }) {
