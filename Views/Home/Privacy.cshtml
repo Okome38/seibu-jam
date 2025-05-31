@@ -11,40 +11,67 @@
     <p id="errorMsg" style="color:red;"></p>
 </div>
 
-<div id="fox-section" style="display:none;">
-    <h3>🦊 ランダムキツネ画像</h3>
-    <button onclick="getFox()">キツネ画像を表示</button>
+<div id="animal-section" style="display:none;">
+    <h3>🐾 ランダムアニマル画像スライドショー</h3>
+    <p>キツネ、猫、犬の画像が3秒ごとに切り替わります。</p>
     <div style="margin-top:20px;">
-        <img id="foxImage" src="" alt="キツネ画像" style="max-width: 400px; display: none;">
+        <img id="animalImage" src="" alt="動物画像" style="max-width: 400px;">
     </div>
 </div>
 
 @section Scripts {
     <script>
         const correctPassword = "1234"; // 任意のパスワードに変更可能
+        let intervalId;
 
         function checkPassword() {
             const input = document.getElementById("passwordInput").value;
             if (input === correctPassword) {
                 document.getElementById("password-section").style.display = "none";
-                document.getElementById("fox-section").style.display = "block";
+                document.getElementById("animal-section").style.display = "block";
+                startImageRotation(); // 認証後に画像の切り替えを開始
             } else {
                 document.getElementById("errorMsg").innerText = "パスワードが違います。";
             }
         }
 
-        function getFox() {
-            fetch('https://randomfox.ca/floof/')
-                .then(response => response.json())
-                .then(data => {
-                    const foxImg = document.getElementById("foxImage");
-                    foxImg.src = data.image;
-                    foxImg.style.display = "block";
-                })
-                .catch(error => {
-                    console.error("エラー:", error);
-                    alert("キツネ画像の取得に失敗しました。");
-                });
+        // 各APIの取得関数
+        function fetchFox() {
+            return fetch('https://randomfox.ca/floof/')
+                .then(res => res.json())
+                .then(data => data.image);
+        }
+
+        function fetchDog() {
+            return fetch('https://dog.ceo/api/breeds/image/random')
+                .then(res => res.json())
+                .then(data => data.message);
+        }
+
+        function fetchCat() {
+            return fetch('https://api.thecatapi.com/v1/images/search')
+                .then(res => res.json())
+                .then(data => data[0].url);
+        }
+
+        // スライドショー開始
+        function startImageRotation() {
+            const fetchers = [fetchFox, fetchCat, fetchDog];
+            let current = 0;
+
+            function updateImage() {
+                fetchers[current % fetchers.length]()
+                    .then(url => {
+                        document.getElementById("animalImage").src = url;
+                    })
+                    .catch(err => {
+                        console.error("画像取得エラー:", err);
+                    });
+                current++;
+            }
+
+            updateImage(); // 最初の1回即時実行
+            intervalId = setInterval(updateImage, 3000); // 3秒ごとに切り替え
         }
     </script>
 }
