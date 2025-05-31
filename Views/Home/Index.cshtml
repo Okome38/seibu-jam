@@ -1,6 +1,7 @@
 @model List<seibuDatabase.Models.Message>
 @{
     ViewData["Title"] = "青武jam";
+    var userReactions = ViewBag.UserReactions as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <div class="text-center">
@@ -56,15 +57,37 @@
     <h2>投稿一覧</h2>
     @if (Model != null && Model.Count > 0)
     {
-        <ul class="list-unstyled">
+        <div class="message-list">
             @foreach (var msg in Model.OrderByDescending(m => m.timestamp))
             {
-                <li class="post-item">
-                    <strong>@msg.name</strong>（@msg.timestamp.ToLocalTime().ToString("yyyy/MM/dd HH:mm")）:<br />
-                    @msg.message
-                </li>
+                var messageId = Model.IndexOf(msg).ToString(); // 簡易的なID生成
+                var userReaction = userReactions.ContainsKey(messageId) ? userReactions[messageId] : "";
+                
+                <div class="message-item card mb-3" data-message-id="@messageId">
+                    <div class="card-body">
+                        <div class="message-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="message-author">@msg.name</strong>
+                                <small class="text-muted">（@msg.timestamp.ToLocalTime().ToString("yyyy/MM/dd HH:mm")）</small>
+                            </div>
+                        </div>
+                        <div class="message-content mt-2">
+                            @msg.message
+                        </div>
+                        <div class="message-reactions mt-3 d-flex align-items-center gap-2">
+                            <button class="btn btn-sm reaction-btn like-btn @(userReaction == "like" ? "btn-success" : "btn-outline-success")" 
+                                    data-message-id="@messageId" data-is-like="true">
+                                👍 <span class="like-count">@msg.likeCount</span>
+                            </button>
+                            <button class="btn btn-sm reaction-btn dislike-btn @(userReaction == "dislike" ? "btn-danger" : "btn-outline-danger")" 
+                                    data-message-id="@messageId" data-is-like="false">
+                                👎 <span class="dislike-count">@msg.dislikeCount</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             }
-        </ul>
+        </div>
     }
     else
     {
@@ -74,3 +97,99 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- いいね/よくないね機能のJavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // リアクションボタンのクリックイベント
+    document.querySelectorAll('.reaction-btn').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const messageId = this.getAttribute('data-message-id');
+            const isLike = this.getAttribute('data-is-like') === 'true';
+            
+            try {
+                const response = await fetch('@Url.Action("AddReaction", "Firebase")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `messageId=${encodeURIComponent(messageId)}&isLike=${isLike}`
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        // ページをリロードして最新の状態を表示
+                        window.location.reload();
+                    }
+                }
+            } catch (error) {
+                console.error('リアクションの送信に失敗しました:', error);
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.message-item {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    transition: box-shadow 0.2s ease;
+}
+
+.message-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.message-author {
+    color: #495057;
+    font-size: 1.1em;
+}
+
+.message-content {
+    font-size: 1em;
+    line-height: 1.5;
+    color: #212529;
+}
+
+.message-reactions {
+    border-top: 1px solid #e9ecef;
+    padding-top: 10px;
+}
+
+.reaction-btn {
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.reaction-btn:hover {
+    transform: translateY(-1px);
+}
+
+.reaction-btn.btn-success, .reaction-btn.btn-danger {
+    color: white;
+}
+
+.like-count, .dislike-count {
+    font-weight: bold;
+}
+
+.bulletin-section {
+    margin-top: 2rem;
+}
+
+.weather-section, .congestion-section {
+    margin-bottom: 2rem;
+}
+
+.gap-2 {
+    gap: 0.5rem !important;
+}
+</style>
