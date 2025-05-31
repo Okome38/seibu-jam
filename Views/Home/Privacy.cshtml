@@ -55,10 +55,10 @@
         }
 
         function fetchShiba() {
-            return fetch('https://shibe.online/api/shibes?count=1&urls=true&httpsUrls=true')
-                .then(res => res.json())
-                .then(data => data[0]);
-        }
+            return fetch('https://shibe.online/api/shibes?count=1')
+			        .then(res => res.json())
+			        .then(data => data[0].replace('http://', 'https://')); // HTTPSに変換
+				}
 
         function fetchCat() {
             return fetch('https://api.thecatapi.com/v1/images/search')
