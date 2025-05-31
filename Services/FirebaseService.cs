@@ -180,99 +180,96 @@ public async Task<List<Message>> GetMessages()
 }
 
         // メッセージにリアクション（いいね/よくないね）を追加
-        public async Task<bool> AddReaction(string messageId, bool isLike, string ipAddress, string userAgent)
+       public async Task<bool> AddReaction(string messageId, bool isLike, string ipAddress, string userAgent)
+{
+    try
+    {
+        var userHash = GetUserHash(ipAddress, userAgent);
+        var token = await GetAuthTokenAsync();
+        var firebase = GetAuthenticatedClient(token);
+
+        // 現在のメッセージを取得
+        var messageSnapshot = await firebase
+            .Child("messages")
+            .Child(messageId)
+            .OnceSingleAsync<Message>();
+
+        if (messageSnapshot == null)
         {
-            try
+            return false; // メッセージが存在しない
+        }
+
+        // 現在のリアクション情報を取得
+        var reactions = messageSnapshot.reactions ?? new Dictionary<string, string>();
+        var currentLikeCount = messageSnapshot.likeCount;
+        var currentDislikeCount = messageSnapshot.dislikeCount;
+
+        // ユーザーの過去のリアクションをチェック
+        var newReaction = isLike ? "like" : "dislike";
+        
+        if (reactions.ContainsKey(userHash))
+        {
+            var previousReaction = reactions[userHash];
+            
+            if (previousReaction == newReaction)
             {
-                var userHash = GetUserHash(ipAddress, userAgent);
-                var token = await GetAuthTokenAsync();
-                var firebase = GetAuthenticatedClient(token);
-
-                // 現在のメッセージを取得
-                var messageSnapshot = await firebase
-                    .Child("messages")
-                    .Child(messageId)
-                    .OnceSingleAsync<object>();
-
-                if (messageSnapshot == null)
+                // 同じリアクションの場合は取り消し
+                reactions.Remove(userHash);
+                if (isLike)
+                    currentLikeCount = Math.Max(0, currentLikeCount - 1);
+                else
+                    currentDislikeCount = Math.Max(0, currentDislikeCount - 1);
+            }
+            else
+            {
+                // 異なるリアクションの場合は変更
+                reactions[userHash] = newReaction;
+                if (isLike)
                 {
-                    return false; // メッセージが存在しない
-                }
-
-                var messageData = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(
-                    messageSnapshot.ToString());
-
-                // 現在のリアクション情報を取得
-                var reactions = new Dictionary<string, string>();
-                if (messageData.ContainsKey("reactions") && messageData["reactions"] != null)
-                {
-                    var reactionsJson = messageData["reactions"].ToString();
-                    reactions = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(reactionsJson) 
-                               ?? new Dictionary<string, string>();
-                }
-
-                var currentLikeCount = messageData.ContainsKey("likeCount") ? Convert.ToInt32(messageData["likeCount"]) : 0;
-                var currentDislikeCount = messageData.ContainsKey("dislikeCount") ? Convert.ToInt32(messageData["dislikeCount"]) : 0;
-
-                // ユーザーの過去のリアクションをチェック
-                var newReaction = isLike ? "like" : "dislike";
-                
-                if (reactions.ContainsKey(userHash))
-                {
-                    var previousReaction = reactions[userHash];
-                    
-                    if (previousReaction == newReaction)
-                    {
-                        // 同じリアクションの場合は取り消し
-                        reactions.Remove(userHash);
-                        if (isLike)
-                            currentLikeCount = Math.Max(0, currentLikeCount - 1);
-                        else
-                            currentDislikeCount = Math.Max(0, currentDislikeCount - 1);
-                    }
-                    else
-                    {
-                        // 異なるリアクションの場合は変更
-                        reactions[userHash] = newReaction;
-                        if (isLike)
-                        {
-                            currentLikeCount++;
-                            currentDislikeCount = Math.Max(0, currentDislikeCount - 1);
-                        }
-                        else
-                        {
-                            currentDislikeCount++;
-                            currentLikeCount = Math.Max(0, currentLikeCount - 1);
-                        }
-                    }
+                    currentLikeCount++;
+                    currentDislikeCount = Math.Max(0, currentDislikeCount - 1);
                 }
                 else
                 {
-                    // 新しいリアクション
-                    reactions[userHash] = newReaction;
-                    if (isLike)
-                        currentLikeCount++;
-                    else
-                        currentDislikeCount++;
+                    currentDislikeCount++;
+                    currentLikeCount = Math.Max(0, currentLikeCount - 1);
                 }
-
-                // メッセージを更新（Firebase .NET SDKの正しい方法）
-                var messageRef = firebase.Child("messages").Child(messageId);
-                
-                // 各フィールドを個別に更新
-                await messageRef.Child("likeCount").PutAsync(currentLikeCount);
-                await messageRef.Child("dislikeCount").PutAsync(currentDislikeCount);
-                await messageRef.Child("reactions").PutAsync(reactions);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"リアクション追加エラー: {ex.Message}");
-                return false;
             }
         }
+        else
+        {
+            // 新しいリアクション
+            reactions[userHash] = newReaction;
+            if (isLike)
+                currentLikeCount++;
+            else
+                currentDislikeCount++;
+        }
 
+        // メッセージ全体を更新（一度に全フィールドを更新）
+        var updatedMessage = new Message
+        {
+            name = messageSnapshot.name,
+            message = messageSnapshot.message,
+            timestamp = messageSnapshot.timestamp,
+            likeCount = currentLikeCount,
+            dislikeCount = currentDislikeCount,
+            reactions = reactions
+        };
+
+        await firebase
+            .Child("messages")
+            .Child(messageId)
+            .PutAsync(updatedMessage);
+
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"リアクション追加エラー: {ex.Message}");
+        return false;
+    }
+}
         // ユーザーのリアクション状態を取得
         public async Task<Dictionary<string, string>> GetUserReactions(string ipAddress, string userAgent)
         {
