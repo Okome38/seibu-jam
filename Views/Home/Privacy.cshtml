@@ -11,13 +11,12 @@
     <p id="errorMsg" style="color:red;"></p>
 </div>
 
-<div id="game-section" style="display:none;">
-    <h3>じゃんけんゲーム</h3>
-    <p>手を選んでください:</p>
-    <button onclick="play('ぐー')">ぐー</button>
-    <button onclick="play('ちょき')">ちょき</button>
-    <button onclick="play('ぱー')">ぱー</button>
-    <p id="result"></p>
+<div id="fox-section" style="display:none;">
+    <h3>🦊 ランダムキツネ画像</h3>
+    <button onclick="getFox()">キツネ画像を表示</button>
+    <div style="margin-top:20px;">
+        <img id="foxImage" src="" alt="キツネ画像" style="max-width: 400px; display: none;">
+    </div>
 </div>
 
 @section Scripts {
@@ -28,30 +27,24 @@
             const input = document.getElementById("passwordInput").value;
             if (input === correctPassword) {
                 document.getElementById("password-section").style.display = "none";
-                document.getElementById("game-section").style.display = "block";
+                document.getElementById("fox-section").style.display = "block";
             } else {
                 document.getElementById("errorMsg").innerText = "パスワードが違います。";
             }
         }
 
-        function play(playerHand) {
-            const hands = ["ぐー", "ちょき", "ぱー"];
-            const computerHand = hands[Math.floor(Math.random() * 3)];
-            let result = "";
-
-            if (playerHand === computerHand) {
-                result = "あいこです！";
-            } else if (
-                (playerHand === "ぐー" && computerHand === "ちょき") ||
-                (playerHand === "ちょき" && computerHand === "ぱー") ||
-                (playerHand === "ぱー" && computerHand === "ぐー")
-            ) {
-                result = `あなたの勝ち！ 相手は${computerHand}でした。`;
-            } else {
-                result = `あなたの負け！ 相手は${computerHand}でした。`;
-            }
-
-            document.getElementById("result").innerText = result;
+        function getFox() {
+            fetch('https://randomfox.ca/floof/')
+                .then(response => response.json())
+                .then(data => {
+                    const foxImg = document.getElementById("foxImage");
+                    foxImg.src = data.image;
+                    foxImg.style.display = "block";
+                })
+                .catch(error => {
+                    console.error("エラー:", error);
+                    alert("キツネ画像の取得に失敗しました。");
+                });
         }
     </script>
 }
