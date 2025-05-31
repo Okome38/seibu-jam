@@ -20,6 +20,14 @@ public class HomeController : Controller
     public async Task<IActionResult> Index()
     {
         var messages = await _firebaseService.GetMessages();
+        
+        // ユーザーのリアクション情報を取得
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+        var userReactions = await _firebaseService.GetUserReactions(ipAddress, userAgent);
+        
+        ViewBag.UserReactions = userReactions;
+        
         return View(messages);
     }
 
