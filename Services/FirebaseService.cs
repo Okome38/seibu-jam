@@ -131,7 +131,7 @@ namespace seibuDatabase.Services
                     .PostAsync(new { 
                         name = name, 
                         message = message, 
-                        timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                        timestamp = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time")).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
                         likeCount = 0,
                         dislikeCount = 0,
                         reactions = new Dictionary<string, string>()
@@ -323,7 +323,7 @@ public async Task<List<Message>> GetMessages()
                 { 
                     donCount = 0, 
                     nonDonCount = 0, 
-                    lastUpdated = DateTime.UtcNow,
+                    lastUpdated = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time")),
                     lastUpdatedBy = "system"
                 };
             }
@@ -334,7 +334,7 @@ public async Task<List<Message>> GetMessages()
                 { 
                     donCount = 0, 
                     nonDonCount = 0, 
-                    lastUpdated = DateTime.UtcNow,
+                    lastUpdated = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time")),
                     lastUpdatedBy = "system"
                 };
             }
@@ -364,7 +364,7 @@ public async Task<List<Message>> GetMessages()
                     currentCounter.nonDonCount++;
                 }
                 
-                currentCounter.lastUpdated = DateTime.UtcNow;
+                currentCounter.lastUpdated = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time"));
                 currentCounter.lastUpdatedBy = updatedBy;
 
                 var firebase = GetAuthenticatedClient(adminToken);
@@ -396,7 +396,7 @@ public async Task<List<Message>> GetMessages()
                 {
                     donCount = 0,
                     nonDonCount = 0,
-                    lastUpdated = DateTime.UtcNow,
+                    lastUpdated = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time")),
                     lastUpdatedBy = resetBy
                 };
 
