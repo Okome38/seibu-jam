@@ -13,15 +13,27 @@
 
 <div id="animal-section" style="display:none;">
     <h3>🐾 ランダムアニマル画像スライドショー</h3>
-    <p>キツネ、猫、犬の画像が3秒ごとに切り替わります。</p>
+    <p>キツネ、柴犬、猫、レッサーパンダの画像が3秒ごとに切り替わります。</p>
     <div style="margin-top:20px;">
-        <img id="animalImage" src="" alt="動物画像" style="max-width: 400px;">
+        <img id="animalImage" src="" alt="動物画像">
     </div>
 </div>
 
+<style>
+    #animalImage {
+        width: 100%;
+        height: auto;
+        max-width: 800px;
+        display: block;
+        margin: 0 auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+</style>
+
 @section Scripts {
     <script>
-        const correctPassword = "1234"; // 任意のパスワードに変更可能
+        const correctPassword = "1234";
         let intervalId;
 
         function checkPassword() {
@@ -29,23 +41,23 @@
             if (input === correctPassword) {
                 document.getElementById("password-section").style.display = "none";
                 document.getElementById("animal-section").style.display = "block";
-                startImageRotation(); // 認証後に画像の切り替えを開始
+                startImageRotation();
             } else {
                 document.getElementById("errorMsg").innerText = "パスワードが違います。";
             }
         }
 
-        // 各APIの取得関数
+        // API取得関数たち
         function fetchFox() {
             return fetch('https://randomfox.ca/floof/')
                 .then(res => res.json())
                 .then(data => data.image);
         }
 
-        function fetchDog() {
-            return fetch('https://dog.ceo/api/breeds/image/random')
+        function fetchShiba() {
+            return fetch('https://shibe.online/api/shibes?count=1&urls=true&httpsUrls=true')
                 .then(res => res.json())
-                .then(data => data.message);
+                .then(data => data[0]);
         }
 
         function fetchCat() {
@@ -54,9 +66,14 @@
                 .then(data => data[0].url);
         }
 
-        // スライドショー開始
+        function fetchRedPanda() {
+            return fetch('https://some-random-api.com/animal/red_panda')
+                .then(res => res.json())
+                .then(data => data.image);
+        }
+
         function startImageRotation() {
-            const fetchers = [fetchFox, fetchCat, fetchDog];
+            const fetchers = [fetchFox, fetchShiba, fetchCat, fetchRedPanda];
             let current = 0;
 
             function updateImage() {
@@ -70,8 +87,8 @@
                 current++;
             }
 
-            updateImage(); // 最初の1回即時実行
-            intervalId = setInterval(updateImage, 3000); // 3秒ごとに切り替え
+            updateImage(); // 最初の表示
+            intervalId = setInterval(updateImage, 3000); // 3秒ごとに更新
         }
     </script>
 }
