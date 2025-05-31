@@ -145,37 +145,39 @@ namespace seibuDatabase.Services
         }
 
         // メッセージを取得（認証不要で実行）
-        public async Task<List<Message>> GetMessages()
-        {
-            try
-            {
-                var firebase = GetPublicClient();
-                var messages = await firebase
-                    .Child("messages")
-                    .OrderBy("timestamp")
-                    .OnceAsync<Message>();
+       // メッセージを取得（認証不要で実行）
+public async Task<List<Message>> GetMessages()
+{
+    try
+    {
+        var firebase = GetPublicClient();
+        var messages = await firebase
+            .Child("messages")
+            .OrderBy("timestamp")
+            .OnceAsync<Message>();
 
-                return messages
-                    .Where(x => x.Object != null)
-                    .Select(x => new Message
-                    {
-                        name = x.Object.name,
-                        message = x.Object.message,
-                        timestamp = x.Object.timestamp,
-                        likeCount = x.Object.likeCount,
-                        dislikeCount = x.Object.dislikeCount,
-                        reactions = x.Object.reactions ?? new Dictionary<string, string>()
-                    })
-                    .OrderByDescending(x => x.timestamp)
-                    .Take(100) // 最新100件まで表示
-                    .ToList();
-            }
-            catch (Exception ex)
+        return messages
+            .Where(x => x.Object != null)
+            .Select(x => new Message
             {
-                Console.WriteLine($"メッセージ取得エラー: {ex.Message}");
-                return new List<Message>();
-            }
-        }
+                id = x.Key, // FirebaseのキーIDを保存
+                name = x.Object.name,
+                message = x.Object.message,
+                timestamp = x.Object.timestamp,
+                likeCount = x.Object.likeCount,
+                dislikeCount = x.Object.dislikeCount,
+                reactions = x.Object.reactions ?? new Dictionary<string, string>()
+            })
+            .OrderByDescending(x => x.timestamp)
+            .Take(100) // 最新100件まで表示
+            .ToList();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"メッセージ取得エラー: {ex.Message}");
+        return new List<Message>();
+    }
+}
 
         // メッセージにリアクション（いいね/よくないね）を追加
         public async Task<bool> AddReaction(string messageId, bool isLike, string ipAddress, string userAgent)
