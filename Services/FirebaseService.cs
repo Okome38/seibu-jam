@@ -254,15 +254,14 @@ namespace seibuDatabase.Services
                         currentDislikeCount++;
                 }
 
-                // メッセージを更新
-                var updates = new Dictionary<string, object>
-                {
-                    [$"messages/{messageId}/likeCount"] = currentLikeCount,
-                    [$"messages/{messageId}/dislikeCount"] = currentDislikeCount,
-                    [$"messages/{messageId}/reactions"] = reactions
-                };
+                // メッセージを更新（Firebase .NET SDKの正しい方法）
+                var messageRef = firebase.Child("messages").Child(messageId);
+                
+                // 各フィールドを個別に更新
+                await messageRef.Child("likeCount").PutAsync(currentLikeCount);
+                await messageRef.Child("dislikeCount").PutAsync(currentDislikeCount);
+                await messageRef.Child("reactions").PutAsync(reactions);
 
-                await firebase.UpdateAsync(updates);
                 return true;
             }
             catch (Exception ex)
